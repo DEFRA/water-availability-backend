@@ -1,0 +1,13 @@
+services:
+  service:
+    build:
+      context: ../..
+    container_name: cdp-node-backend-no-db-template
+    ports:
+      - "8085:8085"
+    environment:
+      PORT: 8085
+    healthcheck:
+      test: curl http://localhost:8085/health
+      start_period: 1s
+      interval: 2s
