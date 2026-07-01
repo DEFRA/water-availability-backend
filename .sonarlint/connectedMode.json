@@ -1,4 +1,4 @@
 {
   "sonarCloudOrganization": "defra",
-  "projectKey": "DEFRA_cdp-node-backend-no-db-template"
+  "projectKey": "DEFRA_water-availability-backend"
 }

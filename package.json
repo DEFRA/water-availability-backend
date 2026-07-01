@@ -1,7 +1,7 @@
 {
-  "name": "cdp-node-backend-no-db-template",
+  "name": "water-availability-backend",
   "version": "0.0.0",
-  "description": "cdp-node-backend-no-db-template",
+  "description": "water-availability-backend",
   "main": "src/index.js",
   "type": "module",
   "engines": {

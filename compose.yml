@@ -23,7 +23,7 @@ services:
 
   ################################################################################
 
-  cdp-node-backend-no-db-template:
+  water-availability-backend:
     build:
       context: .
       target: development
