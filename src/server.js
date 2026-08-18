@@ -8,12 +8,28 @@ import { pulse } from '#/plugins/pulse.js'
 import { requestTracing } from '#/plugins/request-tracing.js'
 import { setupProxy } from '#/common/helpers/proxy/setup-proxy.js'
 import { metrics } from '@defra/cdp-metrics'
+import { postgres } from '#/plugins/postgres.js'
+
+function validateRuntimeConfig() {
+  const cdpEnvironment = config.get('cdpEnvironment')
+  const heartbeatAuthToken = config.get('aggregator.heartbeatAuthToken')
+
+  if (cdpEnvironment !== 'local' && !heartbeatAuthToken) {
+    throw new Error(
+      'AGGREGATOR_HEARTBEAT_AUTH_TOKEN must be configured outside local development'
+    )
+  }
+}
 
 export async function createServer() {
+  validateRuntimeConfig()
   setupProxy()
   const server = Hapi.server({
     host: config.get('host'),
     port: config.get('port'),
+    app: {
+      config
+    },
     routes: {
       validate: {
         options: {
@@ -49,6 +65,7 @@ export async function createServer() {
     metrics,
     secureContext,
     pulse,
+    postgres,
     router
   ])
 

@@ -80,12 +80,87 @@ export const config = convict({
     default: null,
     env: 'HTTP_PROXY'
   },
+  aggregator: {
+    baseUrl: {
+      doc: 'Base URL for the aggregator service',
+      format: String,
+      default: 'http://localhost:3002',
+      env: 'AGGREGATOR_BASE_URL'
+    },
+    statusTimeoutMs: {
+      doc: 'Timeout in milliseconds for aggregator status fetch',
+      format: 'nat',
+      default: 3000,
+      env: 'AGGREGATOR_STATUS_TIMEOUT_MS'
+    },
+    heartbeatAuthToken: {
+      doc: 'Bearer token expected on aggregator heartbeat requests outside local development',
+      format: String,
+      nullable: true,
+      default: null,
+      env: 'AGGREGATOR_HEARTBEAT_AUTH_TOKEN'
+    }
+  },
   tracing: {
     header: {
       doc: 'CDP tracing header name',
       format: String,
       default: 'x-cdp-request-id',
       env: 'TRACING_HEADER'
+    }
+  },
+  postgres: {
+    enabled: {
+      doc: 'Enable Postgres connection plugin',
+      format: Boolean,
+      default: false,
+      env: 'POSTGRES_ENABLED'
+    },
+    host: {
+      doc: 'Postgres hostname',
+      format: String,
+      nullable: true,
+      default: null,
+      env: 'POSTGRES_HOST'
+    },
+    port: {
+      doc: 'Postgres port',
+      format: 'port',
+      default: 5432,
+      env: 'POSTGRES_PORT'
+    },
+    database: {
+      doc: 'Postgres database name',
+      format: String,
+      nullable: true,
+      default: null,
+      env: 'POSTGRES_DATABASE'
+    },
+    user: {
+      doc: 'Postgres username',
+      format: String,
+      nullable: true,
+      default: null,
+      env: 'POSTGRES_USERNAME'
+    },
+    password: {
+      doc: 'Postgres password for local/non-IAM connectivity',
+      format: String,
+      nullable: true,
+      default: null,
+      env: 'POSTGRES_PASSWORD'
+    },
+    sslEnabled: {
+      doc: 'Enable SSL/TLS when connecting to Postgres',
+      format: Boolean,
+      default: isProduction,
+      env: 'POSTGRES_SSL_ENABLED'
+    },
+    sslRejectUnauthorized: {
+      doc: 'Whether Postgres TLS certificate should be fully validated',
+      format: Boolean,
+      default: true,
+      env: 'POSTGRES_SSL_REJECT_UNAUTHORIZED'
     }
   }
 })

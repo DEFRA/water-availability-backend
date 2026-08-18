@@ -65,6 +65,82 @@ To run the application in `development` mode run:
 npm run dev
 ```
 
+### Local Postgres (recommended)
+
+For team development, use a local Postgres container so startup does not depend on
+remote CDP database access.
+
+In this README, "local infra" means support containers for development: Postgres,
+Redis, and optionally Floci (AWS service emulation).
+
+The local Postgres container is exposed on host port `5433` to avoid conflicts with
+other local database instances.
+
+The local template sets `POSTGRES_SSL_ENABLED=false` because the local Postgres
+container does not serve TLS.
+
+`AGGREGATOR_BASE_URL` is used by `/integration/status` so backend can compose
+overall integration health (default `http://localhost:3002`).
+
+1. Copy env template:
+
+```bash
+cp .env.example .env
+```
+
+2. Start local infra (Redis + Postgres default):
+
+```bash
+npm run local:infra:up
+```
+
+`local:infra:up` starts Redis + Postgres only (recommended default).
+
+Direct Docker Compose equivalent:
+
+```bash
+docker compose up -d redis postgres
+```
+
+If you need AWS service emulation later (S3/SQS/SNS patterns), start Floci on demand:
+
+```bash
+npm run local:infra:aws
+```
+
+Direct Docker Compose equivalent:
+
+```bash
+docker compose up -d floci
+```
+
+If you want everything at once:
+
+```bash
+npm run local:infra:full
+```
+
+Direct Docker Compose equivalent:
+
+```bash
+docker compose up -d floci redis postgres
+```
+
+3. Start backend:
+
+```bash
+npm run dev
+```
+
+Local Postgres provides connectivity testing only. The controlled PostGIS schema
+and migration workflow will be introduced in a dedicated database foundation PR.
+
+When finished:
+
+```bash
+npm run local:infra:down
+```
+
 ### Testing
 
 To test the application run:
@@ -113,11 +189,12 @@ git config --global core.autocrlf false
 
 ## API endpoints
 
-| Endpoint             | Description                    |
-| :------------------- | :----------------------------- |
-| `GET: /health`       | Health                         |
-| `GET: /example    `  | Example API (remove as needed) |
-| `GET: /example/<id>` | Example API (remove as needed) |
+| Endpoint                       | Description          |
+| :----------------------------- | :------------------- |
+| `GET: /`                       | Service info         |
+| `GET: /health`                 | Health               |
+| `GET: /integration/status`     | Integration status   |
+| `POST: /integration/heartbeat` | Aggregator heartbeat |
 
 ## Development helpers
 
@@ -163,6 +240,7 @@ A local environment with:
 
 - Floci for AWS services (S3, SQS, SNS etc)
 - Redis
+- Postgres
 - This service.
 - A commented out frontend example.
 
