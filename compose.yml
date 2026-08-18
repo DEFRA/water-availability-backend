@@ -21,6 +21,24 @@ services:
     networks:
       - cdp-tenant
 
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - '5433:5432'
+    environment:
+      POSTGRES_DB: water_availability
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d water_availability']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - cdp-tenant
+
   ################################################################################
 
   water-availability-backend:
@@ -29,16 +47,21 @@ services:
       target: development
     ports:
       - '3001:3001'
-    links:
-      - 'floci:floci'
     depends_on:
-      floci:
+      postgres:
         condition: service_healthy
     env_file:
       - 'compose/aws.env'
     environment:
       PORT: 3001
       NODE_ENV: development
+      POSTGRES_ENABLED: true
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DATABASE: water_availability
+      POSTGRES_USERNAME: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_SSL_REJECT_UNAUTHORIZED: false
     networks:
       - cdp-tenant
     volumes:
@@ -51,3 +74,6 @@ networks:
   cdp-tenant:
     driver: bridge
     name: cdp-tenant
+
+volumes:
+  postgres-data:
