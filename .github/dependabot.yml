@@ -1,0 +1,48 @@
+version: 2
+
+updates:
+  - package-ecosystem: npm
+    directory: /
+    open-pull-requests-limit: 10
+
+    groups:
+      lint:
+        patterns:
+          - 'prettier'
+          - 'stylelint'
+          - 'stylelint-*'
+
+      logging:
+        patterns:
+          - '*-pino'
+          - '*-pino-format'
+          - 'pino'
+          - 'pino-*'
+
+      tools:
+        patterns:
+          - 'husky'
+          - 'vitest'
+          - 'nodemon'
+          - 'npm-run-all'
+
+    ignore:
+      - dependency-name: 'eslint-*'
+      - dependency-name: 'eslint'
+
+    schedule:
+      interval: weekly
+      time: '10:30'
+      timezone: 'Europe/London'
+
+    versioning-strategy: increase
+
+    allow:
+      - dependency-type: direct
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      time: '10:30'
+      timezone: 'Europe/London'
