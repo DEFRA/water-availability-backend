@@ -1,10 +1,12 @@
 version: 2
 
 updates:
+  # Update npm packages
   - package-ecosystem: npm
     directory: /
     open-pull-requests-limit: 10
 
+    # Group packages into shared PR
     groups:
       lint:
         patterns:
@@ -30,6 +32,7 @@ updates:
       - dependency-name: 'eslint-*'
       - dependency-name: 'eslint'
 
+    # Schedule run every Monday, local time
     schedule:
       interval: weekly
       time: '10:30'
@@ -38,10 +41,13 @@ updates:
     versioning-strategy: increase
 
     allow:
+      # Include direct package.json updates
       - dependency-type: direct
 
+  # Update GitHub Actions
   - package-ecosystem: github-actions
     directory: /
+    # Schedule run every Monday, local time
     schedule:
       interval: weekly
       time: '10:30'
