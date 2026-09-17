@@ -35,7 +35,10 @@ export const up = (pgm) => {
     { ifNotExists: true }
   )
 
-  pgm.createIndex('hydrology_stations', 'geom', { method: 'gist', ifNotExists: true })
+  pgm.createIndex('hydrology_stations', 'geom', {
+    method: 'gist',
+    ifNotExists: true
+  })
 
   pgm.createTable(
     'hydrology_measures',

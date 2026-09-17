@@ -31,14 +31,28 @@ export const up = (pgm) => {
 }
 
 export const down = (pgm) => {
-  pgm.dropConstraint('assessment_point_waterbodies', 'chk_apw_validation_status', {
+  pgm.dropConstraint(
+    'assessment_point_waterbodies',
+    'chk_apw_validation_status',
+    {
+      ifExists: true
+    }
+  )
+  pgm.dropConstraint(
+    'waterbody_features',
+    'chk_waterbody_features_water_type',
+    {
+      ifExists: true
+    }
+  )
+  pgm.dropConstraint(
+    'management_catchments',
+    'chk_management_catchments_water_type',
+    {
+      ifExists: true
+    }
+  )
+  pgm.dropConstraint('ingestion_batch', 'chk_ingestion_batch_status', {
     ifExists: true
   })
-  pgm.dropConstraint('waterbody_features', 'chk_waterbody_features_water_type', {
-    ifExists: true
-  })
-  pgm.dropConstraint('management_catchments', 'chk_management_catchments_water_type', {
-    ifExists: true
-  })
-  pgm.dropConstraint('ingestion_batch', 'chk_ingestion_batch_status', { ifExists: true })
 }

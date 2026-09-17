@@ -79,7 +79,9 @@ export function validateAssessmentPointWaterbodyDataset({
     validAssessmentPoints: results.filter((result) => result.valid).length,
     invalidAssessmentPoints: results.filter((result) => !result.valid).length,
     zeroMatchAssessmentPoints: results.filter((result) =>
-      result.issues.includes('Assessment point is not mapped to any valid waterbody')
+      result.issues.includes(
+        'Assessment point is not mapped to any valid waterbody'
+      )
     ).length,
     duplicateWaterbodyAssessmentPoints: results.filter((result) =>
       result.issues.includes(

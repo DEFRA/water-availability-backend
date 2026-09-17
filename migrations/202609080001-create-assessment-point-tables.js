@@ -62,7 +62,10 @@ export const up = (pgm) => {
     { ifNotExists: true }
   )
 
-  pgm.createIndex('management_catchments', 'geom', { method: 'gist', ifNotExists: true })
+  pgm.createIndex('management_catchments', 'geom', {
+    method: 'gist',
+    ifNotExists: true
+  })
 
   pgm.createTable(
     'operational_catchments',
@@ -99,7 +102,10 @@ export const up = (pgm) => {
     { ifNotExists: true }
   )
 
-  pgm.createIndex('operational_catchments', 'geom', { method: 'gist', ifNotExists: true })
+  pgm.createIndex('operational_catchments', 'geom', {
+    method: 'gist',
+    ifNotExists: true
+  })
   pgm.createIndex('operational_catchments', 'management_catchment_id', {
     ifNotExists: true
   })
@@ -145,7 +151,10 @@ export const up = (pgm) => {
     { ifNotExists: true }
   )
 
-  pgm.createIndex('waterbody_features', 'geom', { method: 'gist', ifNotExists: true })
+  pgm.createIndex('waterbody_features', 'geom', {
+    method: 'gist',
+    ifNotExists: true
+  })
   pgm.createIndex('waterbody_features', 'operational_catchment_id', {
     ifNotExists: true
   })
@@ -204,7 +213,11 @@ export const up = (pgm) => {
     'assessment_points',
     {
       id: { type: 'serial', primaryKey: true },
-      assessment_point_id: { type: 'varchar(100)', notNull: true, unique: true },
+      assessment_point_id: {
+        type: 'varchar(100)',
+        notNull: true,
+        unique: true
+      },
       name: { type: 'varchar(255)' },
       codes: { type: 'jsonb' },
       source_srid: { type: 'integer', notNull: true, default: 4326 },
@@ -233,7 +246,10 @@ export const up = (pgm) => {
     { ifNotExists: true }
   )
 
-  pgm.createIndex('assessment_points', 'geom', { method: 'gist', ifNotExists: true })
+  pgm.createIndex('assessment_points', 'geom', {
+    method: 'gist',
+    ifNotExists: true
+  })
   pgm.createIndex('assessment_points', 'operational_catchment_id', {
     ifNotExists: true
   })
@@ -337,9 +353,15 @@ export const up = (pgm) => {
 
 export const down = (pgm) => {
   pgm.dropTable('hof_bands', { ifExists: true, cascade: true })
-  pgm.dropTable('assessment_point_waterbodies', { ifExists: true, cascade: true })
+  pgm.dropTable('assessment_point_waterbodies', {
+    ifExists: true,
+    cascade: true
+  })
   pgm.dropTable('assessment_points', { ifExists: true, cascade: true })
-  pgm.dropTable('water_availability_polygons', { ifExists: true, cascade: true })
+  pgm.dropTable('water_availability_polygons', {
+    ifExists: true,
+    cascade: true
+  })
   pgm.dropTable('waterbody_features', { ifExists: true, cascade: true })
   pgm.dropTable('operational_catchments', { ifExists: true, cascade: true })
   pgm.dropTable('management_catchments', { ifExists: true, cascade: true })

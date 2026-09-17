@@ -46,7 +46,8 @@ describe('assessment point waterbody validation', () => {
 
   test('does not treat AP labels as waterbody IDs', () => {
     const result = validateAssessmentPointWaterbodyLinks({
-      assessmentPointId: 'ea_catchment_abstraction_management_strategy_assessment_points.1',
+      assessmentPointId:
+        'ea_catchment_abstraction_management_strategy_assessment_points.1',
       waterbodyIds: ['AP5, Lower Cherwell'],
       validWaterbodyIds: new Set()
     })
@@ -58,10 +59,7 @@ describe('assessment point waterbody validation', () => {
   })
 
   test('validates the full dataset and flags invalid mappings', () => {
-    const validWaterbodyIds = new Set([
-      'GB106039029800',
-      'GB106039029801'
-    ])
+    const validWaterbodyIds = new Set(['GB106039029800', 'GB106039029801'])
 
     const result = validateAssessmentPointWaterbodyDataset({
       assessmentPoints: [
@@ -104,6 +102,8 @@ describe('assessment point waterbody validation', () => {
 
     expect(result.valid).toBe(false)
     expect(result.summary.invalidAssessmentPoints).toBe(2)
-    expect(result.results[0].issues).toContain('Canonical waterbody table is empty')
+    expect(result.results[0].issues).toContain(
+      'Canonical waterbody table is empty'
+    )
   })
 })
