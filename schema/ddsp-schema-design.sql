@@ -7,8 +7,10 @@
 -- ticket: ArcGIS abstraction licences. Groundwater is ON HOLD - a water_type column is included
 -- for future use but only 'surface' is populated for now.
 --
--- SRID decision: all geometry is stored as EPSG:4326 (WGS84), with the source CRS recorded for
--- traceability. Catchment Planning GeoJSON and Hydrology station coordinates are WGS84 (live-
+-- SRID decision: all geometry is stored as EPSG:4326 (WGS84). Native source CRS is recorded per
+-- row via source_srid only on tables where a transform is needed (water_availability_polygons,
+-- assessment_points); other tables' source data is already WGS84 and does not carry that column.
+-- Catchment Planning GeoJSON and Hydrology station coordinates are WGS84 (live-
 -- confirmed). The live Water Availability WFS returns EPSG:27700 (live-confirmed), so the
 -- aggregator must transform that geometry to EPSG:4326 before persistence
 -- (ST_Transform(ST_SetSRID(geom, 27700), 4326)). Runtime distance/area calculations should cast
@@ -23,7 +25,8 @@
 CREATE EXTENSION IF NOT EXISTS postgis;
 
 -- Audit trail for every aggregator ingestion run, one row per source per run.
--- Source field values: 'catchment-planning-api' | 'water-availability-wfs' | 'hydrology-api'.
+-- Source field values: 'catchment-planning-api' | 'water-availability-wfs' | 'hydrology-api' |
+-- 'cams-assessment-points'.
 CREATE TABLE IF NOT EXISTS ingestion_batch (
   id SERIAL PRIMARY KEY,
   source_name VARCHAR(100) NOT NULL,

@@ -20,6 +20,15 @@ function getRequiredEnv(name) {
   return value
 }
 
+// Mirrors src/config.js: IAM auth and TLS default to on in production so this script behaves
+// the same as the running application when the optional env vars are left unset.
+const isProduction = process.env.NODE_ENV === 'production'
+function boolEnv(name, defaultValue) {
+  return process.env[name] === undefined
+    ? defaultValue
+    : process.env[name] === 'true'
+}
+
 function normaliseId(value) {
   if (value === null || value === undefined) {
     return ''
@@ -201,8 +210,8 @@ async function main() {
   const host = getRequiredEnv('POSTGRES_HOST')
   const port = Number(process.env.POSTGRES_PORT ?? 5432)
   const user = getRequiredEnv('POSTGRES_USERNAME')
-  const iamAuthentication = process.env.POSTGRES_IAM_AUTHENTICATION === 'true'
-  const sslEnabled = process.env.POSTGRES_SSL_ENABLED === 'true'
+  const iamAuthentication = boolEnv('POSTGRES_IAM_AUTHENTICATION', isProduction)
+  const sslEnabled = boolEnv('POSTGRES_SSL_ENABLED', isProduction)
 
   if (iamAuthentication && !sslEnabled) {
     throw new Error(

@@ -12,8 +12,10 @@ or against the applied migrations.
 
 ## SRID decision
 
-All geometry columns are stored as **EPSG:4326 (WGS84)**. Source CRS is recorded per row
-(`source_srid`) for traceability, and transforms are applied at ingestion time, not at query time:
+All geometry columns are stored as **EPSG:4326 (WGS84)**. Native source CRS is recorded per row
+via `source_srid` only on tables where a transform is needed to reach it (`water_availability_polygons`,
+`assessment_points`); other tables' source CRS is already WGS84 and is documented in the table below
+instead of stored per row. Transforms are applied at ingestion time, not at query time:
 
 | Source                                                                      | Native CRS (live-confirmed) | Transform needed                              |
 | --------------------------------------------------------------------------- | --------------------------- | --------------------------------------------- |

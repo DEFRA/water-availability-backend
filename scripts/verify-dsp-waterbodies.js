@@ -22,7 +22,14 @@ async function main() {
   }
 
   const payload = await response.json()
-  const features = Array.isArray(payload.features) ? payload.features : []
+
+  if (!Array.isArray(payload.features)) {
+    throw new Error(
+      'DSP waterbody response did not contain a features array - malformed or unexpected payload shape'
+    )
+  }
+
+  const features = payload.features
   const idToTypes = new Map()
   let missingIdCount = 0
 
