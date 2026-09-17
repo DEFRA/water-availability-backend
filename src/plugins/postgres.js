@@ -25,7 +25,7 @@ export const postgres = {
       requiredValue('POSTGRES_DATABASE', pgConfig.database)
       requiredValue('POSTGRES_USERNAME', pgConfig.user)
 
-  if (!pgConfig.iamAuthentication) {
+      if (!pgConfig.iamAuthentication) {
         requiredValue('POSTGRES_PASSWORD', pgConfig.password)
       } else if (!pgConfig.sslEnabled) {
         throw new Error(
