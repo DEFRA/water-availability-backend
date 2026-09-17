@@ -8,8 +8,9 @@
 -- for future use but only 'surface' is populated for now.
 --
 -- SRID decision: all geometry is stored as EPSG:4326 (WGS84). Native source CRS is recorded per
--- row via source_srid only on tables where a transform is needed (water_availability_polygons,
--- assessment_points); other tables' source data is already WGS84 and does not carry that column.
+-- row via source_srid on tables where source-CRS traceability is stored (water_availability_polygons,
+-- assessment_points); other tables' source data is already WGS84 and that CRS is documented rather
+-- than stored per row.
 -- Catchment Planning GeoJSON and Hydrology station coordinates are WGS84 (live-
 -- confirmed). The live Water Availability WFS returns EPSG:27700 (live-confirmed), so the
 -- aggregator must transform that geometry to EPSG:4326 before persistence
