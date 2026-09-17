@@ -8,6 +8,7 @@ Core delivery platform Node.js Backend Template.
   - [Setup](#setup)
   - [Development](#development)
   - [Testing](#testing)
+  - [CDP Aurora Postgres](#cdp-aurora-postgres)
   - [Production](#production)
   - [Npm scripts](#npm-scripts)
   - [Update dependencies](#update-dependencies)
@@ -140,6 +141,38 @@ When finished:
 ```bash
 npm run local:infra:down
 ```
+
+### CDP Aurora Postgres
+
+CDP Aurora connections use IAM database authentication in deployed environments.
+The application connects with the DML user (`water_availability_backend`) and
+generates a short-lived RDS authentication token using the ECS task role. The
+task role must have `rds-db:connect` permission for that database user.
+
+Configure these non-secret values through `cdp-app-config`:
+
+```env
+POSTGRES_ENABLED=true
+POSTGRES_HOST=<Aurora cluster endpoint>
+POSTGRES_PORT=5432
+POSTGRES_DATABASE=water_availability_backend
+POSTGRES_USERNAME=water_availability_backend
+POSTGRES_IAM_AUTHENTICATION=true
+POSTGRES_SSL_ENABLED=true
+AWS_REGION=eu-west-2
+```
+
+Do not store IAM tokens or database passwords in Git. The IAM token is generated
+at runtime from the ECS task role. Local development keeps
+`POSTGRES_IAM_AUTHENTICATION=false` and uses the password in `.env`.
+
+Schema migrations require the separate DDL user and must be run through the
+approved CDP migration workflow. Do not use the DDL user for normal application
+queries. Set `POSTGRES_USERNAME` to the CDP-provided DDL username only for that
+migration execution, then restore the DML username for the service deployment.
+
+The connection pool lifetime is limited to ten minutes so connections are
+recreated before the fifteen-minute IAM token lifetime expires.
 
 ### Testing
 
