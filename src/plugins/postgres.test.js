@@ -114,7 +114,6 @@ describe('postgres plugin', () => {
       'POSTGRES_PASSWORD must be configured when POSTGRES_ENABLED=true'
     )
   })
-
   test('uses an IAM token provider for Aurora connections', async () => {
     const query = vi.fn().mockResolvedValue({ rows: [] })
     mockPool.mockImplementation(function Pool(options) {
