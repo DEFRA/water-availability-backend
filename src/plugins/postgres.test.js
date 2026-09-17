@@ -8,6 +8,14 @@ vi.mock('pg', () => ({
   }
 }))
 
+const mockGetAuthToken = vi.hoisted(() => vi.fn())
+
+vi.mock('@aws-sdk/rds-signer', () => ({
+  Signer: vi.fn().mockImplementation(function Signer() {
+    this.getAuthToken = mockGetAuthToken
+  })
+}))
+
 const { postgres } = await import('./postgres.js')
 
 const initialConfig = structuredClone(config.getProperties())
@@ -63,6 +71,7 @@ describe('postgres plugin', () => {
     config.set('postgres.database', 'water_availability')
     config.set('postgres.user', 'postgres')
     config.set('postgres.password', 'postgres')
+    config.set('postgres.iamAuthentication', false)
 
     await postgres.plugin.register(server)
 
@@ -90,5 +99,33 @@ describe('postgres plugin', () => {
     await shutdownHandler()
 
     expect(end).toHaveBeenCalled()
+  })
+
+  test('uses an IAM token provider for Aurora connections', async () => {
+    const query = vi.fn().mockResolvedValue({ rows: [] })
+    mockPool.mockImplementation(function Pool(options) {
+      return { query, end, options }
+    })
+    const end = vi.fn().mockResolvedValue()
+    const server = createPluginServer()
+    config.set('postgres.enabled', true)
+    config.set('postgres.host', 'aurora.example')
+    config.set('postgres.port', 5432)
+    config.set('postgres.database', 'water_availability')
+    config.set('postgres.user', 'water_availability_backend')
+    config.set('postgres.iamAuthentication', true)
+    config.set('postgres.awsRegion', 'eu-west-2')
+    mockGetAuthToken.mockResolvedValue('short-lived-token')
+
+    await postgres.plugin.register(server)
+
+    const poolOptions = mockPool.mock.calls[0][0]
+    expect(poolOptions).toMatchObject({
+      host: 'aurora.example',
+      user: 'water_availability_backend',
+      maxLifetimeSeconds: 600
+    })
+    await expect(poolOptions.password()).resolves.toBe('short-lived-token')
+    expect(mockGetAuthToken).toHaveBeenCalledOnce()
   })
 })

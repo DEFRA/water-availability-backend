@@ -150,6 +150,18 @@ export const config = convict({
       default: null,
       env: 'POSTGRES_PASSWORD'
     },
+    iamAuthentication: {
+      doc: 'Use short-lived IAM authentication tokens for Aurora PostgreSQL',
+      format: Boolean,
+      default: isProduction,
+      env: 'POSTGRES_IAM_AUTHENTICATION'
+    },
+    awsRegion: {
+      doc: 'AWS region used to generate Aurora IAM authentication tokens',
+      format: String,
+      default: 'eu-west-2',
+      env: 'AWS_REGION'
+    },
     sslEnabled: {
       doc: 'Enable SSL/TLS when connecting to Postgres',
       format: Boolean,

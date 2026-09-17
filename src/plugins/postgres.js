@@ -1,4 +1,5 @@
 import pg from 'pg'
+import { Signer } from '@aws-sdk/rds-signer'
 import { config } from '#/config.js'
 
 const { Pool } = pg
@@ -24,12 +25,26 @@ export const postgres = {
       requiredValue('POSTGRES_DATABASE', pgConfig.database)
       requiredValue('POSTGRES_USERNAME', pgConfig.user)
 
+      const password = pgConfig.iamAuthentication
+        ? async () => {
+            const signer = new Signer({
+              hostname: pgConfig.host,
+              port: pgConfig.port,
+              region: pgConfig.awsRegion,
+              username: pgConfig.user
+            })
+
+            return signer.getAuthToken()
+          }
+        : pgConfig.password
+
       const pool = new Pool({
         host: pgConfig.host,
         port: pgConfig.port,
         database: pgConfig.database,
         user: pgConfig.user,
-        password: pgConfig.password,
+        password,
+        ...(pgConfig.iamAuthentication && { maxLifetimeSeconds: 600 }),
         ssl: pgConfig.sslEnabled
           ? {
               rejectUnauthorized: pgConfig.sslRejectUnauthorized
