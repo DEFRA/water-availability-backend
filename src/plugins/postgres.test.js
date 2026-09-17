@@ -101,6 +101,19 @@ describe('postgres plugin', () => {
     expect(end).toHaveBeenCalled()
   })
 
+  test('requires a password when IAM authentication is disabled', async () => {
+    const server = createPluginServer()
+    config.set('postgres.enabled', true)
+    config.set('postgres.host', 'localhost')
+    config.set('postgres.database', 'water_availability')
+    config.set('postgres.user', 'postgres')
+    config.set('postgres.iamAuthentication', false)
+    config.set('postgres.password', null)
+
+    await expect(postgres.plugin.register(server)).rejects.toThrow(
+      'POSTGRES_PASSWORD must be configured when POSTGRES_ENABLED=true'
+    )
+  })
   test('uses an IAM token provider for Aurora connections', async () => {
     const query = vi.fn().mockResolvedValue({ rows: [] })
     mockPool.mockImplementation(function Pool(options) {
@@ -115,6 +128,7 @@ describe('postgres plugin', () => {
     config.set('postgres.user', 'water_availability_backend')
     config.set('postgres.iamAuthentication', true)
     config.set('postgres.awsRegion', 'eu-west-2')
+    config.set('postgres.sslEnabled', true)
     mockGetAuthToken.mockResolvedValue('short-lived-token')
 
     await postgres.plugin.register(server)
@@ -127,5 +141,19 @@ describe('postgres plugin', () => {
     })
     await expect(poolOptions.password()).resolves.toBe('short-lived-token')
     expect(mockGetAuthToken).toHaveBeenCalledOnce()
+  })
+
+  test('requires TLS for IAM authentication', async () => {
+    const server = createPluginServer()
+    config.set('postgres.enabled', true)
+    config.set('postgres.host', 'aurora.example')
+    config.set('postgres.database', 'water_availability')
+    config.set('postgres.user', 'water_availability_backend')
+    config.set('postgres.iamAuthentication', true)
+    config.set('postgres.sslEnabled', false)
+
+    await expect(postgres.plugin.register(server)).rejects.toThrow(
+      'POSTGRES_SSL_ENABLED must be true when POSTGRES_IAM_AUTHENTICATION=true'
+    )
   })
 })

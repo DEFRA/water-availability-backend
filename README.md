@@ -155,7 +155,7 @@ Configure these non-secret values through `cdp-app-config`:
 POSTGRES_ENABLED=true
 POSTGRES_HOST=<Aurora cluster endpoint>
 POSTGRES_PORT=5432
-POSTGRES_DATABASE=water_availability_backend
+POSTGRES_DATABASE=<Aurora database name>
 POSTGRES_USERNAME=water_availability_backend
 POSTGRES_IAM_AUTHENTICATION=true
 POSTGRES_SSL_ENABLED=true
