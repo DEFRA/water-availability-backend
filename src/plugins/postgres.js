@@ -25,6 +25,10 @@ export const postgres = {
       requiredValue('POSTGRES_DATABASE', pgConfig.database)
       requiredValue('POSTGRES_USERNAME', pgConfig.user)
 
+      if (!pgConfig.iamAuthentication) {
+        requiredValue('POSTGRES_PASSWORD', pgConfig.password)
+      }
+
       const password = pgConfig.iamAuthentication
         ? async () => {
             const signer = new Signer({

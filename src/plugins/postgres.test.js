@@ -101,6 +101,20 @@ describe('postgres plugin', () => {
     expect(end).toHaveBeenCalled()
   })
 
+  test('requires a password when IAM authentication is disabled', async () => {
+    const server = createPluginServer()
+    config.set('postgres.enabled', true)
+    config.set('postgres.host', 'localhost')
+    config.set('postgres.database', 'water_availability')
+    config.set('postgres.user', 'postgres')
+    config.set('postgres.iamAuthentication', false)
+    config.set('postgres.password', null)
+
+    await expect(postgres.plugin.register(server)).rejects.toThrow(
+      'POSTGRES_PASSWORD must be configured when POSTGRES_ENABLED=true'
+    )
+  })
+
   test('uses an IAM token provider for Aurora connections', async () => {
     const query = vi.fn().mockResolvedValue({ rows: [] })
     mockPool.mockImplementation(function Pool(options) {
