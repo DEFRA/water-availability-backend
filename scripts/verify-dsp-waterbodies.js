@@ -60,7 +60,7 @@ async function main() {
     totalGeoJsonFeatures: features.length,
     distinctNonEmptyIds: ids.length,
     distinctValidWfdIds: validWfdIds.length,
-    duplicateGeometryFeatures: features.length - ids.length,
+    duplicateGeometryFeatures: features.length - missingIdCount - ids.length,
     missingIdFeatures: missingIdCount,
     geometryTypeCounts,
     idsWithBothCatchmentAndRiverLine: idsWithBothExpectedTypes.length,

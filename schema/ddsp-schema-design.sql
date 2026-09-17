@@ -51,8 +51,8 @@ CREATE TABLE IF NOT EXISTS management_catchments (
   properties JSONB, -- raw source feature properties, retained for fields not yet promoted to columns
   ingestion_batch_id INTEGER REFERENCES ingestion_batch(id),
   source_updated_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   CONSTRAINT chk_management_catchments_water_type CHECK (water_type IN ('surface', 'groundwater'))
 );
 
@@ -71,8 +71,8 @@ CREATE TABLE IF NOT EXISTS operational_catchments (
   properties JSONB,
   ingestion_batch_id INTEGER REFERENCES ingestion_batch(id),
   source_updated_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_operational_catchments_geom
@@ -94,8 +94,8 @@ CREATE TABLE IF NOT EXISTS waterbody_features (
   properties JSONB,
   ingestion_batch_id INTEGER REFERENCES ingestion_batch(id),
   source_updated_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   CONSTRAINT chk_waterbody_features_water_type CHECK (water_type IN ('surface', 'groundwater'))
 );
 
@@ -128,8 +128,8 @@ CREATE TABLE IF NOT EXISTS water_availability_polygons (
   properties JSONB,
   ingestion_batch_id INTEGER REFERENCES ingestion_batch(id),
   source_updated_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_water_availability_polygons_geom
@@ -152,8 +152,8 @@ CREATE TABLE IF NOT EXISTS hydrology_stations (
   properties JSONB,
   ingestion_batch_id INTEGER REFERENCES ingestion_batch(id),
   source_updated_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_hydrology_stations_geom
@@ -173,8 +173,8 @@ CREATE TABLE IF NOT EXISTS hydrology_measures (
   properties JSONB,
   ingestion_batch_id INTEGER REFERENCES ingestion_batch(id),
   source_updated_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_hydrology_measures_station
@@ -191,7 +191,7 @@ CREATE TABLE IF NOT EXISTS hydrology_readings (
   completeness VARCHAR(50),
   qflag VARCHAR(100),
   ingestion_batch_id INTEGER REFERENCES ingestion_batch(id),
-  created_at TIMESTAMPTZ DEFAULT NOW(),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   UNIQUE (measure_id, reading_datetime),
   CONSTRAINT chk_hydrology_readings_quality CHECK (quality IS NULL OR quality IN ('Good', 'Estimated', 'Suspect', 'Unchecked', 'Missing')),
   CONSTRAINT chk_hydrology_readings_completeness CHECK (completeness IS NULL OR completeness IN ('Complete', 'Incomplete'))
@@ -216,8 +216,8 @@ CREATE TABLE IF NOT EXISTS assessment_points (
   properties JSONB,
   ingestion_batch_id INTEGER REFERENCES ingestion_batch(id),
   source_updated_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_assessment_points_geom
@@ -239,8 +239,8 @@ CREATE TABLE IF NOT EXISTS assessment_point_waterbodies (
   properties JSONB,
   ingestion_batch_id INTEGER REFERENCES ingestion_batch(id),
   source_updated_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   UNIQUE (assessment_point_id, waterbody_id),
   CONSTRAINT chk_apw_validation_status CHECK (validation_status IN ('pending', 'valid', 'invalid'))
 );
@@ -286,10 +286,10 @@ CREATE TABLE IF NOT EXISTS hof_bands (
   effective_from DATE,
   effective_to DATE,
   ingestion_batch_id INTEGER REFERENCES ingestion_batch(id), -- NULL when loaded from stub/seed data
-  is_stub_data BOOLEAN NOT NULL DEFAULT FALSE, -- true while sourced from seed fixtures, not DSP
+  is_stub_data BOOLEAN NOT NULL DEFAULT TRUE, -- true while sourced from seed fixtures, not DSP
   source_updated_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_hof_bands_waterbody

@@ -331,7 +331,7 @@ export const up = (pgm) => {
       is_stub_data: {
         type: 'boolean',
         notNull: true,
-        default: false
+        default: true
       },
       source_updated_at: { type: 'timestamptz' },
       created_at: {

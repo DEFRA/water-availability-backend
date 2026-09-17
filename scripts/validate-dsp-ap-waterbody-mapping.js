@@ -1,4 +1,5 @@
 import pg from 'pg'
+import { Signer } from '@aws-sdk/rds-signer'
 
 import { validateAssessmentPointWaterbodyDataset } from '#/domain/assessment-point-validation.js'
 
@@ -79,9 +80,14 @@ async function fetchAssessmentPointFeatures(url) {
 
     allFeatures.push(...features)
 
-    const numberMatched = Number(payload.numberMatched ?? features.length)
+    if (features.length === 0 || features.length < limit) {
+      break
+    }
 
-    if (features.length === 0 || allFeatures.length >= numberMatched) {
+    if (
+      typeof payload.numberMatched === 'number' &&
+      allFeatures.length >= payload.numberMatched
+    ) {
       break
     }
 
@@ -104,35 +110,54 @@ async function loadCanonicalWaterbodyIds(pool) {
   )
 }
 
-async function findMatchingWaterbodyIds(pool, feature) {
-  if (!feature?.geometry || feature.geometry.type !== 'Point') {
-    return []
+async function findMatchingWaterbodyIdsBatch(pool, features) {
+  const pointFeatures = features
+    .map((feature, index) => ({ feature, index }))
+    .filter(({ feature }) => feature?.geometry?.type === 'Point')
+
+  const matchesByIndex = new Map()
+
+  if (pointFeatures.length === 0) {
+    return matchesByIndex
   }
 
-  const { coordinates } = feature.geometry
-  const longitude = coordinates[0]
-  const latitude = coordinates[1]
+  const indexes = pointFeatures.map(({ index }) => index)
+  const longitudes = pointFeatures.map(
+    ({ feature }) => feature.geometry.coordinates[0]
+  )
+  const latitudes = pointFeatures.map(
+    ({ feature }) => feature.geometry.coordinates[1]
+  )
 
   const { rows } = await pool.query(
     `
-      SELECT waterbody_id
-      FROM waterbody_features
-      WHERE ST_Contains(
-        geom,
-        ST_SetSRID(ST_MakePoint($1, $2), 4326)
-      )
-      OR ST_DWithin(
-        geom::geography,
-        ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography,
-        100
-      )
+      SELECT input.idx AS idx, wb.waterbody_id AS waterbody_id
+      FROM unnest($1::int[], $2::float8[], $3::float8[]) AS input(idx, lon, lat)
+      JOIN waterbody_features wb
+        ON ST_Contains(
+          wb.geom,
+          ST_SetSRID(ST_MakePoint(input.lon, input.lat), 4326)
+        )
+        OR ST_DWithin(
+          wb.geom::geography,
+          ST_SetSRID(ST_MakePoint(input.lon, input.lat), 4326)::geography,
+          100
+        )
     `,
-    [longitude, latitude]
+    [indexes, longitudes, latitudes]
   )
 
-  return rows
-    .map((row) => row.waterbody_id)
-    .filter((waterbodyId) => isValidWaterbodyCandidate(waterbodyId))
+  for (const row of rows) {
+    if (!isValidWaterbodyCandidate(row.waterbody_id)) {
+      continue
+    }
+
+    const existing = matchesByIndex.get(row.idx) ?? []
+    existing.push(row.waterbody_id)
+    matchesByIndex.set(row.idx, existing)
+  }
+
+  return matchesByIndex
 }
 
 function reportNonWfdEntries(features) {
@@ -173,19 +198,47 @@ async function main() {
   const apCollectionUrl =
     process.env.DSP_AP_COLLECTION_URL ?? DEFAULT_AP_COLLECTION_URL
 
+  const host = getRequiredEnv('POSTGRES_HOST')
+  const port = Number(process.env.POSTGRES_PORT ?? 5432)
+  const user = getRequiredEnv('POSTGRES_USERNAME')
+  const iamAuthentication = process.env.POSTGRES_IAM_AUTHENTICATION === 'true'
+  const sslEnabled = process.env.POSTGRES_SSL_ENABLED === 'true'
+
+  if (iamAuthentication && !sslEnabled) {
+    throw new Error(
+      'POSTGRES_SSL_ENABLED must be true when POSTGRES_IAM_AUTHENTICATION=true'
+    )
+  }
+
+  if (!iamAuthentication) {
+    getRequiredEnv('POSTGRES_PASSWORD')
+  }
+
+  const password = iamAuthentication
+    ? async () => {
+        const signer = new Signer({
+          hostname: host,
+          port,
+          region: process.env.AWS_REGION ?? 'eu-west-2',
+          username: user
+        })
+
+        return signer.getAuthToken()
+      }
+    : process.env.POSTGRES_PASSWORD
+
   const pool = new Pool({
-    host: getRequiredEnv('POSTGRES_HOST'),
-    port: Number(process.env.POSTGRES_PORT ?? 5432),
+    host,
+    port,
     database: getRequiredEnv('POSTGRES_DATABASE'),
-    user: getRequiredEnv('POSTGRES_USERNAME'),
-    password: process.env.POSTGRES_PASSWORD,
-    ssl:
-      process.env.POSTGRES_SSL_ENABLED === 'true'
-        ? {
-            rejectUnauthorized:
-              process.env.POSTGRES_SSL_REJECT_UNAUTHORIZED !== 'false'
-          }
-        : false
+    user,
+    password,
+    ssl: sslEnabled
+      ? {
+          rejectUnauthorized:
+            process.env.POSTGRES_SSL_REJECT_UNAUTHORIZED !== 'false'
+        }
+      : false
   })
 
   try {
@@ -194,18 +247,12 @@ async function main() {
       loadCanonicalWaterbodyIds(pool)
     ])
 
-    const assessmentPoints = []
+    const matchesByIndex = await findMatchingWaterbodyIdsBatch(pool, features)
 
-    for (const feature of features) {
-      const assessmentPointId = readAssessmentPointId(feature)
-      const spatialMatches = await findMatchingWaterbodyIds(pool, feature)
-      const waterbodyIds = spatialMatches.length > 0 ? spatialMatches : []
-
-      assessmentPoints.push({
-        assessmentPointId,
-        waterbodyIds
-      })
-    }
+    const assessmentPoints = features.map((feature, index) => ({
+      assessmentPointId: readAssessmentPointId(feature),
+      waterbodyIds: matchesByIndex.get(index) ?? []
+    }))
 
     const validation = validateAssessmentPointWaterbodyDataset({
       assessmentPoints,

@@ -21,7 +21,18 @@ const host = required('POSTGRES_HOST', process.env.POSTGRES_HOST)
 const database = required('POSTGRES_DATABASE', process.env.POSTGRES_DATABASE)
 const user = required('POSTGRES_USERNAME', process.env.POSTGRES_USERNAME)
 const iamAuthentication = process.env.POSTGRES_IAM_AUTHENTICATION === 'true'
+const sslEnabled = process.env.POSTGRES_SSL_ENABLED === 'true'
 const port = Number(process.env.POSTGRES_PORT ?? 5432)
+
+if (iamAuthentication && !sslEnabled) {
+  throw new Error(
+    'POSTGRES_SSL_ENABLED must be true when POSTGRES_IAM_AUTHENTICATION=true'
+  )
+}
+
+if (!iamAuthentication) {
+  required('POSTGRES_PASSWORD', process.env.POSTGRES_PASSWORD)
+}
 
 const password = iamAuthentication
   ? async () => {
@@ -44,13 +55,12 @@ await runner({
     user,
     password,
     ...(iamAuthentication && { maxLifetimeSeconds: 600 }),
-    ssl:
-      process.env.POSTGRES_SSL_ENABLED === 'true'
-        ? {
-            rejectUnauthorized:
-              process.env.POSTGRES_SSL_REJECT_UNAUTHORIZED !== 'false'
-          }
-        : false
+    ssl: sslEnabled
+      ? {
+          rejectUnauthorized:
+            process.env.POSTGRES_SSL_REJECT_UNAUTHORIZED !== 'false'
+        }
+      : false
   },
   dir: 'migrations',
   direction,
