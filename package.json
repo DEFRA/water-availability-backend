@@ -53,7 +53,7 @@
     "hapi-pino": "13.0.0",
     "hapi-pulse": "4.0.0",
     "https-proxy-agent": "9.1.0",
-    "joi": "18.2.5",
+    "joi": "18.2.8",
     "pg": "8.23.0",
     "pino": "10.3.1",
     "pino-pretty": "13.1.3",
