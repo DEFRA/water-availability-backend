@@ -28,7 +28,6 @@ updates:
           - 'vitest-*'
           - '@vitest/*'
           - 'nodemon'
-          - 'npm-run-all'
 
     ignore:
       - dependency-name: 'eslint-*'
