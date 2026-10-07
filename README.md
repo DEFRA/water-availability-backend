@@ -100,7 +100,7 @@ npm run local:infra:up
 Direct Docker Compose equivalent:
 
 ```bash
-docker compose up -d redis postgres
+docker compose up -d --wait redis postgres
 ```
 
 If you need AWS service emulation later (S3/SQS/SNS patterns), start Floci on demand:
@@ -124,13 +124,13 @@ npm run local:infra:full
 Direct Docker Compose equivalent:
 
 ```bash
-docker compose up -d floci redis postgres
+docker compose up -d --wait floci redis postgres
 ```
 
 3. Apply database migrations:
 
 ```bash
-npm run db:migrate
+npm run migrate:up
 ```
 
 4. Start backend:
@@ -143,9 +143,9 @@ Migrations live in [migrations](./migrations) and run via `node-pg-migrate`
 (see [scripts/migrate.js](./scripts/migrate.js)). Useful scripts:
 
 ```bash
-npm run db:migrate        # apply all pending migrations (up)
-npm run db:migrate:down   # roll back the most recent migration
-npm run db:migrate:create # scaffold a new migration file
+npm run migrate:up      # apply all pending migrations
+npm run migrate:down    # roll back the most recent migration
+npm run migrate:create  # scaffold a new migration file
 ```
 
 The Check Pull Request CI workflow runs migrations against a disposable

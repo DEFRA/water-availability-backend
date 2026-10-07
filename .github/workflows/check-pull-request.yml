@@ -46,7 +46,7 @@ jobs:
           npm ci
           npm run format:check
           npm run lint
-          npm run db:migrate
+          npm run migrate:up
           npm test
         env:
           POSTGRES_HOST: localhost
