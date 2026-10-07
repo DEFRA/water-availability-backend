@@ -46,8 +46,9 @@ jobs:
           npm ci
           npm run format:check
           npm run lint
-          npm run migrate:up
-          npm test
+
+      - name: Run database migrations
+        run: npm run migrate:up
         env:
           POSTGRES_HOST: localhost
           POSTGRES_PORT: 5432
@@ -56,6 +57,8 @@ jobs:
           POSTGRES_PASSWORD: postgres
           POSTGRES_IAM_AUTHENTICATION: false
           POSTGRES_SSL_ENABLED: false
+
+      - run: npm test
 
       - name: Test Docker Image Build
         run: |
