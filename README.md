@@ -127,14 +127,30 @@ Direct Docker Compose equivalent:
 docker compose up -d floci redis postgres
 ```
 
-3. Start backend:
+3. Apply database migrations:
+
+```bash
+npm run db:migrate
+```
+
+4. Start backend:
 
 ```bash
 npm run dev
 ```
 
-Local Postgres provides connectivity testing only. The controlled PostGIS schema
-and migration workflow will be introduced in a dedicated database foundation PR.
+Migrations live in [migrations](./migrations) and run via `node-pg-migrate`
+(see [scripts/migrate.js](./scripts/migrate.js)). Useful scripts:
+
+```bash
+npm run db:migrate        # apply all pending migrations (up)
+npm run db:migrate:down   # roll back the most recent migration
+npm run db:migrate:create # scaffold a new migration file
+```
+
+The Check Pull Request CI workflow runs migrations against a disposable
+Postgres service container before the test suite, so migrations are verified
+on every PR.
 
 When finished:
 
