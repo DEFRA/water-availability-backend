@@ -63,11 +63,15 @@ jobs:
 
       - name: Seed local database
         run: npm run db:seed
+        env:
+          CONFIRM_DB_SEED: true
 
       - run: npm test
 
       - name: Run spatial integration tests
         run: npm run test:integration
+        env:
+          CONFIRM_DB_SEED: true
 
       - name: Test Docker Image Build
         run: |
