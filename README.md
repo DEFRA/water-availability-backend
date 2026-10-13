@@ -170,14 +170,15 @@ Islip Weir hydrology station). See
 [scripts/db/fixtures/local-seed-dataset.json](./scripts/db/fixtures/local-seed-dataset.json).
 
 ```bash
-npm run db:seed   # idempotent - safe to run against an already-seeded DB
-npm run db:reset  # truncates the seeded tables and reseeds from scratch
+npm run db:seed                       # idempotent - safe to run against an already-seeded DB
+CONFIRM_DB_RESET=true npm run db:reset # truncates the seeded tables and reseeds from scratch
 ```
 
 Both scripts connect to the local docker-compose Postgres by default (no `.env`
 required); the same `POSTGRES_*` variables used elsewhere are honoured if set.
-`db:reset` truncates every seeded table, so it refuses to run against a host
-that isn't local unless `CONFIRM_DB_RESET=true` is set.
+`db:reset` truncates every seeded table, so it always requires
+`CONFIRM_DB_RESET=true` - a hostname alone can't prove the target is disposable
+(an SSH/SSM tunnel to a shared Aurora instance can also present as `localhost`).
 [src/domain/spatial-queries.integration.test.js](./src/domain/spatial-queries.integration.test.js)
 exercises `ST_Contains`/`ST_Distance`/`ST_DWithin` spatial queries against this
 seeded data. It's excluded from `npm test` (so release builds don't need a

@@ -3,8 +3,9 @@ import { seedDatabase, loadFixture } from '../../scripts/db/seed.js'
 
 // Requires local Postgres running + migrated, e.g.:
 //   npm run local:infra:up && npm run migrate:up
-// Run via `npm run test:integration` - the plain `npm test` script excludes this file
-// since publish.yml/publish-hotfix.yml run `npm test` without a Postgres service.
+// Run via `npm run test:integration` (vitest.integration.config.js) - vitest.config.js
+// excludes this file from `npm test`/`npm run test:watch` since publish.yml/publish-hotfix.yml
+// and most local dev loops run without a Postgres service.
 // Verifies ST_Contains/ST_Distance/ST_DWithin spatial queries against the representative
 // DDSP-derived seed fixture (see scripts/db/fixtures/local-seed-dataset.json).
 const fixture = loadFixture()

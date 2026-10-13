@@ -16,18 +16,14 @@ const SEEDED_TABLES = [
   'ingestion_batch'
 ]
 
-const LOCAL_HOST_PATTERN = /^(127\.0\.0\.1|localhost|::1)$/i
-
-// This truncates every seeded table - refuse to run it against anything that doesn't look like a
-// local database unless the caller explicitly confirms, so a stray shared/Aurora POSTGRES_HOST
-// can't be wiped by accident.
+// This truncates every seeded table. A hostname check alone is not a reliable guard - an
+// SSH/SSM tunnel to a shared Aurora instance also presents as "localhost" - so every destructive
+// reset requires an explicit, conscious CONFIRM_DB_RESET=true rather than being inferred.
 function assertSafeToReset(host) {
-  const confirmed = process.env.CONFIRM_DB_RESET === 'true'
-
-  if (!LOCAL_HOST_PATTERN.test(host) && !confirmed) {
+  if (process.env.CONFIRM_DB_RESET !== 'true') {
     throw new Error(
-      `Refusing to reset Postgres at host "${host}" - it does not look like a local database. ` +
-        'Set CONFIRM_DB_RESET=true if you really intend to truncate and reseed this database.'
+      `Refusing to reset Postgres at host "${host}" without confirmation. ` +
+        'Re-run with CONFIRM_DB_RESET=true if you really intend to truncate and reseed this database.'
     )
   }
 }
