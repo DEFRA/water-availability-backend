@@ -8,6 +8,7 @@ Core delivery platform Node.js Backend Template.
   - [Setup](#setup)
   - [Development](#development)
   - [Testing](#testing)
+  - [Seed data](#seed-data)
   - [CDP Aurora Postgres](#cdp-aurora-postgres)
   - [Production](#production)
   - [Npm scripts](#npm-scripts)
@@ -156,6 +157,37 @@ When finished:
 
 ```bash
 npm run local:infra:down
+```
+
+### Seed data
+
+A small, representative seed dataset is available so local development and
+integration tests don't depend on live Aurora or live DDSP calls. It covers one
+waterbody, one operational catchment, one water-availability polygon and a few
+hydrology readings - a simplified (small bounding-box) footprint of a real,
+publicly available OGL-licensed DDSP sample (the River Cherwell waterbody and
+Islip Weir hydrology station). See
+[scripts/db/fixtures/local-seed-dataset.json](./scripts/db/fixtures/local-seed-dataset.json).
+
+```bash
+CONFIRM_DB_SEED=true npm run db:seed   # overwrites fixture records
+CONFIRM_DB_RESET=true npm run db:reset # truncates the seeded tables and reseeds from scratch
+```
+
+Both scripts connect to the local docker-compose Postgres by default (no `.env`
+required); the same `POSTGRES_*` variables used elsewhere are honoured if set.
+Because the seed fixture uses real DDSP identifiers, `db:seed` requires
+`CONFIRM_DB_SEED=true` to avoid overwriting records in a shared database.
+`db:reset` truncates every seeded table, so it always requires
+`CONFIRM_DB_RESET=true` - a hostname alone can't prove the target is disposable
+(an SSH/SSM tunnel to a shared Aurora instance can also present as `localhost`).
+[src/domain/spatial-queries.integration.test.js](./src/domain/spatial-queries.integration.test.js)
+exercises `ST_Contains`/`ST_Distance`/`ST_DWithin` spatial queries against this
+seeded data. It's excluded from `npm test` (so release builds don't need a
+database) and runs separately via:
+
+```bash
+CONFIRM_DB_SEED=true npm run test:integration
 ```
 
 ### CDP Aurora Postgres
