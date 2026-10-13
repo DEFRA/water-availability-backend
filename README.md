@@ -8,6 +8,7 @@ Core delivery platform Node.js Backend Template.
   - [Setup](#setup)
   - [Development](#development)
   - [Testing](#testing)
+  - [Seed data](#seed-data)
   - [CDP Aurora Postgres](#cdp-aurora-postgres)
   - [Production](#production)
   - [Npm scripts](#npm-scripts)
@@ -157,6 +158,27 @@ When finished:
 ```bash
 npm run local:infra:down
 ```
+
+### Seed data
+
+A small, representative seed dataset is available so local development and
+integration tests don't depend on live Aurora or live DDSP calls. It covers one
+waterbody, one operational catchment, one water-availability polygon and a few
+hydrology readings - a simplified (small bounding-box) footprint of a real,
+publicly available OGL-licensed DDSP sample (the River Cherwell waterbody and
+Islip Weir hydrology station). See
+[scripts/db/fixtures/local-seed-dataset.json](./scripts/db/fixtures/local-seed-dataset.json).
+
+```bash
+npm run db:seed   # idempotent - safe to run against an already-seeded DB
+npm run db:reset  # truncates the seeded tables and reseeds from scratch
+```
+
+Both scripts connect to the local docker-compose Postgres by default (no `.env`
+required); the same `POSTGRES_*` variables used elsewhere are honoured if set.
+[src/domain/spatial-queries.integration.test.js](./src/domain/spatial-queries.integration.test.js)
+exercises `ST_Contains`/`ST_Distance`/`ST_DWithin` spatial queries against this
+seeded data and runs as part of `npm test`.
 
 ### CDP Aurora Postgres
 

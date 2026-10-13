@@ -21,6 +21,8 @@
     "db:migrate": "npm run migrate:up",
     "db:migrate:down": "npm run migrate:down",
     "db:migrate:create": "npm run migrate:create",
+    "db:seed": "node --env-file-if-exists=.env scripts/db/seed.js",
+    "db:reset": "node --env-file-if-exists=.env scripts/db/reset.js",
     "verify:dsp-waterbodies": "node scripts/verify-dsp-waterbodies.js",
     "format": "prettier --write \"**/*.{cjs,js,json,md}\"",
     "format:check": "prettier --check \"**/*.{cjs,js,json,md}\"",
