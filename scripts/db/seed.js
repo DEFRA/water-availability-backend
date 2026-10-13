@@ -11,6 +11,18 @@ export function loadFixture() {
   return JSON.parse(readFileSync(FIXTURE_PATH, 'utf8'))
 }
 
+function assertSafeToSeed() {
+  if (
+    process.env.CONFIRM_DB_SEED !== 'true' &&
+    process.env.CONFIRM_DB_RESET !== 'true'
+  ) {
+    throw new Error(
+      'Refusing to seed Postgres without confirmation. ' +
+        'Re-run with CONFIRM_DB_SEED=true if you really intend to overwrite fixture records.'
+    )
+  }
+}
+
 async function findOrCreateIngestionBatch(pool, { sourceName, sourceVersion }) {
   const existing = await pool.query(
     'SELECT id FROM ingestion_batch WHERE source_name = $1 AND source_version = $2 LIMIT 1',
@@ -250,6 +262,8 @@ async function seedHydrologyReadings(
 }
 
 export async function seedDatabase(pool, fixture = loadFixture()) {
+  assertSafeToSeed()
+
   const ingestionBatchId = await findOrCreateIngestionBatch(
     pool,
     fixture.ingestionBatch

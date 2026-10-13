@@ -170,12 +170,14 @@ Islip Weir hydrology station). See
 [scripts/db/fixtures/local-seed-dataset.json](./scripts/db/fixtures/local-seed-dataset.json).
 
 ```bash
-npm run db:seed                       # idempotent - safe to run against an already-seeded DB
+CONFIRM_DB_SEED=true npm run db:seed   # overwrites fixture records
 CONFIRM_DB_RESET=true npm run db:reset # truncates the seeded tables and reseeds from scratch
 ```
 
 Both scripts connect to the local docker-compose Postgres by default (no `.env`
 required); the same `POSTGRES_*` variables used elsewhere are honoured if set.
+Because the seed fixture uses real DDSP identifiers, `db:seed` requires
+`CONFIRM_DB_SEED=true` to avoid overwriting records in a shared database.
 `db:reset` truncates every seeded table, so it always requires
 `CONFIRM_DB_RESET=true` - a hostname alone can't prove the target is disposable
 (an SSH/SSM tunnel to a shared Aurora instance can also present as `localhost`).
@@ -185,8 +187,7 @@ seeded data. It's excluded from `npm test` (so release builds don't need a
 database) and runs separately via:
 
 ```bash
-npm run db:seed
-npm run test:integration
+CONFIRM_DB_SEED=true npm run test:integration
 ```
 
 ### CDP Aurora Postgres
