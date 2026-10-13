@@ -176,9 +176,17 @@ npm run db:reset  # truncates the seeded tables and reseeds from scratch
 
 Both scripts connect to the local docker-compose Postgres by default (no `.env`
 required); the same `POSTGRES_*` variables used elsewhere are honoured if set.
+`db:reset` truncates every seeded table, so it refuses to run against a host
+that isn't local unless `CONFIRM_DB_RESET=true` is set.
 [src/domain/spatial-queries.integration.test.js](./src/domain/spatial-queries.integration.test.js)
 exercises `ST_Contains`/`ST_Distance`/`ST_DWithin` spatial queries against this
-seeded data and runs as part of `npm test`.
+seeded data. It's excluded from `npm test` (so release builds don't need a
+database) and runs separately via:
+
+```bash
+npm run db:seed
+npm run test:integration
+```
 
 ### CDP Aurora Postgres
 

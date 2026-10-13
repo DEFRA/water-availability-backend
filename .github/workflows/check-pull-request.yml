@@ -24,8 +24,8 @@ jobs:
           POSTGRES_PASSWORD: postgres
         ports:
           # Mapped to the same host port (5433) as the local docker-compose Postgres so that
-          # scripts/db/pg-pool.js's local defaults work unchanged for `npm run db:seed` and the
-          # spatial integration test during `npm test` - no POSTGRES_* env needed on those steps.
+          # scripts/db/pg-pool.js's local defaults work unchanged for `npm run db:seed` and
+          # `npm run test:integration` - no POSTGRES_* env needed on those steps.
           - 5433:5432
         options: >-
           --health-cmd "pg_isready -U postgres -d water_availability"
@@ -65,6 +65,9 @@ jobs:
         run: npm run db:seed
 
       - run: npm test
+
+      - name: Run spatial integration tests
+        run: npm run test:integration
 
       - name: Test Docker Image Build
         run: |

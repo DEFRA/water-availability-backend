@@ -147,7 +147,8 @@ async function seedWaterAvailabilityPolygon(pool, polygon, ingestionBatchId) {
       polygon.shapeLeng,
       JSON.stringify(polygon.geometry),
       polygon.sourceSrid,
-      JSON.stringify({}),
+      // country has no promoted column - it lives in properties per data-dictionary.md
+      JSON.stringify({ country: polygon.country }),
       ingestionBatchId
     ]
   )

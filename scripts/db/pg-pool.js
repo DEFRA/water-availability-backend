@@ -13,7 +13,7 @@ function boolEnv(name, defaultValue) {
     : process.env[name] === 'true'
 }
 
-export function createPoolFromEnv() {
+export function resolveConnectionOptions() {
   const host = process.env.POSTGRES_HOST ?? '127.0.0.1'
   const port = Number(process.env.POSTGRES_PORT ?? 5433)
   const database = process.env.POSTGRES_DATABASE ?? 'water_availability'
@@ -26,6 +26,13 @@ export function createPoolFromEnv() {
       'POSTGRES_SSL_ENABLED must be true when POSTGRES_IAM_AUTHENTICATION=true'
     )
   }
+
+  return { host, port, database, user, iamAuthentication, sslEnabled }
+}
+
+export function createPoolFromEnv() {
+  const { host, port, database, user, iamAuthentication, sslEnabled } =
+    resolveConnectionOptions()
 
   const password = iamAuthentication
     ? async () => {

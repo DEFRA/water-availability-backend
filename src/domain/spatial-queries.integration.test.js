@@ -3,6 +3,8 @@ import { seedDatabase, loadFixture } from '../../scripts/db/seed.js'
 
 // Requires local Postgres running + migrated, e.g.:
 //   npm run local:infra:up && npm run migrate:up
+// Run via `npm run test:integration` - the plain `npm test` script excludes this file
+// since publish.yml/publish-hotfix.yml run `npm test` without a Postgres service.
 // Verifies ST_Contains/ST_Distance/ST_DWithin spatial queries against the representative
 // DDSP-derived seed fixture (see scripts/db/fixtures/local-seed-dataset.json).
 const fixture = loadFixture()
@@ -105,8 +107,12 @@ describe('spatial queries against seeded data', () => {
        FROM hydrology_readings hr
        JOIN hydrology_measures hm ON hm.id = hr.measure_id
        WHERE hm.measure_id = $1
+         AND hr.reading_datetime = ANY($2::timestamptz[])
        ORDER BY hr.reading_datetime`,
-      [fixture.hydrologyMeasure.measureId]
+      [
+        fixture.hydrologyMeasure.measureId,
+        fixture.hydrologyReadings.map((reading) => reading.readingDatetime)
+      ]
     )
 
     expect(rows).toHaveLength(fixture.hydrologyReadings.length)
