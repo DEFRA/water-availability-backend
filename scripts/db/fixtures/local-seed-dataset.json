@@ -1,11 +1,11 @@
 {
-  "_provenance": "Small representative subset of public OGL-UK-3.0 DDSP data (environment.data.gov.uk), for local dev/test seeding only - not production data. Identifiers, names and hydrology readings are taken from live DDSP Catchment Planning API / Water Resource Availability WFS / Hydrology API responses (captured 2026-10-12). Catchment/waterbody/water-availability-polygon geometries are simplified bounding-box footprints of the real features (not the full published polygons) to keep this fixture small and the spatial test assertions easy to reason about.",
+  "_provenance": "Small representative subset of public OGL-UK-3.0 DDSP data (environment.data.gov.uk), for local dev/test seeding only - not production data. Names, hydrology readings and underlying real DDSP identifiers (captured 2026-10-12) are embedded in each id below, but prefixed with TEST-SEED- so this fixture can never collide with/overwrite a genuinely ingested row sharing the same real DDSP id, even if accidentally pointed at a shared database. Catchment/waterbody/water-availability-polygon geometries are simplified bounding-box footprints of the real features (not the full published polygons) to keep this fixture small and the spatial test assertions easy to reason about.",
   "ingestionBatch": {
     "sourceName": "local-dev-seed-fixture",
     "sourceVersion": "2026-10-12"
   },
   "managementCatchment": {
-    "managementCatchmentId": "3012",
+    "managementCatchmentId": "TEST-SEED-MANCAT-3012",
     "name": "Cherwell and Ray",
     "waterType": "surface",
     "riverBasinDistrict": "Thames",
@@ -23,7 +23,7 @@
     }
   },
   "operationalCatchment": {
-    "operationalCatchmentId": "3079",
+    "operationalCatchmentId": "TEST-SEED-OPCAT-3079",
     "name": "Cherwell",
     "geometry": {
       "type": "Polygon",
@@ -39,7 +39,7 @@
     }
   },
   "waterbody": {
-    "waterbodyId": "GB106039029800",
+    "waterbodyId": "TEST-SEED-WATERBODY-GB106039029800",
     "name": "Cherwell (Ray to Thames) and Woodeaton Brook",
     "waterBodyType": "River",
     "waterType": "surface",
@@ -61,7 +61,7 @@
     }
   },
   "waterAvailabilityPolygon": {
-    "eaWbId": "GB106039029800",
+    "eaWbId": "TEST-SEED-WATERBODY-GB106039029800",
     "camscdsq30": "Green",
     "camscdsq50": "Green",
     "camscdsq70": "Yellow",
@@ -85,7 +85,7 @@
     }
   },
   "hydrologyStation": {
-    "stationId": "34e23121-3c10-454d-80dc-45d824b9e2cf",
+    "stationId": "TEST-SEED-STATION-34e23121-3c10-454d-80dc-45d824b9e2cf",
     "wiskiId": "1489TH",
     "nrfaStationId": "39140",
     "name": "Islip Weir",
@@ -101,7 +101,7 @@
     }
   },
   "hydrologyMeasure": {
-    "measureId": "34e23121-3c10-454d-80dc-45d824b9e2cf-flow-m-86400-m3s-qualified",
+    "measureId": "TEST-SEED-MEASURE-34e23121-3c10-454d-80dc-45d824b9e2cf-flow-m-86400-m3s-qualified",
     "parameterName": "flow",
     "periodName": "daily",
     "valueType": "mean",
