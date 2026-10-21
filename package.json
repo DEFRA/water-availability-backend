@@ -41,7 +41,7 @@
   "author": "Defra DDTS",
   "license": "OGL-UK-3.0",
   "dependencies": {
-    "@aws-sdk/rds-signer": "3.1147.0",
+    "@aws-sdk/rds-signer": "3.1151.0",
     "@defra/cdp-auditing": "0.6.2",
     "@defra/cdp-metrics": "0.6.1",
     "@defra/hapi-secure-context": "0.4.1",
