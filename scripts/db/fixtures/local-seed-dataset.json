@@ -1,0 +1,131 @@
+{
+  "_provenance": "Small representative subset of public OGL-UK-3.0 DDSP data (environment.data.gov.uk), for local dev/test seeding only - not production data. Names, hydrology readings and underlying real DDSP identifiers (captured 2026-10-12) are embedded in each id below, but prefixed with TEST-SEED- so this fixture can never collide with/overwrite a genuinely ingested row sharing the same real DDSP id, even if accidentally pointed at a shared database. Catchment/waterbody/water-availability-polygon geometries are simplified bounding-box footprints of the real features (not the full published polygons) to keep this fixture small and the spatial test assertions easy to reason about.",
+  "ingestionBatch": {
+    "sourceName": "local-dev-seed-fixture",
+    "sourceVersion": "2026-10-12"
+  },
+  "managementCatchment": {
+    "managementCatchmentId": "TEST-SEED-MANCAT-3012",
+    "name": "Cherwell and Ray",
+    "waterType": "surface",
+    "riverBasinDistrict": "Thames",
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [-1.4, 51.6],
+          [-1.0, 51.6],
+          [-1.0, 52.2],
+          [-1.4, 52.2],
+          [-1.4, 51.6]
+        ]
+      ]
+    }
+  },
+  "operationalCatchment": {
+    "operationalCatchmentId": "TEST-SEED-OPCAT-3079",
+    "name": "Cherwell",
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [-1.33, 51.7],
+          [-1.15, 51.7],
+          [-1.15, 51.9],
+          [-1.33, 51.9],
+          [-1.33, 51.7]
+        ]
+      ]
+    }
+  },
+  "waterbody": {
+    "waterbodyId": "TEST-SEED-WATERBODY-GB106039029800",
+    "name": "Cherwell (Ray to Thames) and Woodeaton Brook",
+    "waterBodyType": "River",
+    "waterType": "surface",
+    "properties": {
+      "uri": "http://environment.data.gov.uk/catchment-planning/so/WaterBody/GB106039029800",
+      "geometry-type": "http://environment.data.gov.uk/catchment-planning/def/geometry/Catchment"
+    },
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [-1.27, 51.74],
+          [-1.19, 51.74],
+          [-1.19, 51.83],
+          [-1.27, 51.83],
+          [-1.27, 51.74]
+        ]
+      ]
+    }
+  },
+  "waterAvailabilityPolygon": {
+    "eaWbId": "TEST-SEED-WATERBODY-GB106039029800",
+    "camscdsq30": "Green",
+    "camscdsq50": "Green",
+    "camscdsq70": "Yellow",
+    "camscdsq95": "Red",
+    "resavail": "at least 30%",
+    "shapeLeng": 15230.5,
+    "shapeArea": null,
+    "country": "England",
+    "sourceSrid": 27700,
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [-1.26, 51.73],
+          [-1.18, 51.73],
+          [-1.18, 51.82],
+          [-1.26, 51.82],
+          [-1.26, 51.73]
+        ]
+      ]
+    }
+  },
+  "hydrologyStation": {
+    "stationId": "TEST-SEED-STATION-34e23121-3c10-454d-80dc-45d824b9e2cf",
+    "wiskiId": "1489TH",
+    "nrfaStationId": "39140",
+    "name": "Islip Weir",
+    "easting": 452320,
+    "northing": 213730,
+    "properties": {
+      "riverName": ["River Cherwell", "River Ray"],
+      "catchmentArea": 287.0
+    },
+    "geometry": {
+      "type": "Point",
+      "coordinates": [-1.242338, 51.819748]
+    }
+  },
+  "hydrologyMeasure": {
+    "measureId": "TEST-SEED-MEASURE-34e23121-3c10-454d-80dc-45d824b9e2cf-flow-m-86400-m3s-qualified",
+    "parameterName": "flow",
+    "periodName": "daily",
+    "valueType": "mean",
+    "unitName": "m3/s",
+    "observationType": "qualified"
+  },
+  "hydrologyReadings": [
+    {
+      "readingDatetime": "2026-09-02T09:00:00Z",
+      "value": 0.23,
+      "quality": "Unchecked",
+      "completeness": "Complete"
+    },
+    {
+      "readingDatetime": "2026-09-03T09:00:00Z",
+      "value": 0.197,
+      "quality": "Unchecked",
+      "completeness": "Complete"
+    },
+    {
+      "readingDatetime": "2026-09-04T09:00:00Z",
+      "value": 0.198,
+      "quality": "Unchecked",
+      "completeness": "Complete"
+    }
+  ]
+}
