@@ -217,10 +217,22 @@ Do not store IAM tokens or database passwords in Git. The IAM token is generated
 at runtime from the ECS task role. Local development keeps
 `POSTGRES_IAM_AUTHENTICATION=false` and uses the password in `.env`.
 
-Schema migrations require the separate DDL user and must be run through the
-approved CDP migration workflow. Do not use the DDL user for normal application
-queries. Set `POSTGRES_USERNAME` to the CDP-provided DDL username only for that
-migration execution, then restore the DML username for the service deployment.
+Schema changes in CDP environments are applied with Liquibase, not
+`node-pg-migrate`. The changelog lives in [changelog](./changelog) and is
+published by the `Publish Database Schema` step in the publish workflow. Apply it
+from the CDP Portal (`Apply Changelog`) for each environment. The platform runs
+it as the DDL user (`water_availability_backend_ddl`), which the running service
+cannot use. The service always connects as the DML user. Merging or deploying the
+service never changes the database; only `Apply Changelog` does.
+
+The `node-pg-migrate` files in [migrations](./migrations) are for local
+development and CI only. Any schema change must be made in both places, with the
+same result. The Check Liquibase Schema workflow applies both to scratch
+databases on every pull request and fails if the resulting schemas differ.
+
+Each changeset has a `MARK_RAN` precondition, so applying the changelog to a
+database that was already migrated with `node-pg-migrate` records the changesets
+as run instead of failing on existing objects.
 
 The connection pool lifetime is limited to ten minutes so connections are
 recreated before the fifteen-minute IAM token lifetime expires.
