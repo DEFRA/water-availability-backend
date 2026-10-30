@@ -87,7 +87,7 @@ jobs:
             pg_dump --schema-only --no-owner --no-privileges \
               --exclude-table='pgmigrations*' \
               --exclude-table='databasechangelog*' \
-              "$1" | grep -v -e '^--' -e '^$' -e '^SET ' -e '^SELECT pg_catalog.set_config'
+              "$1" | grep -v -e '^--' -e '^$' -e '^SET ' -e '^SELECT pg_catalog.set_config' -e '^\\restrict ' -e '^\\unrestrict '
           }
           dump schema_node_pg_migrate > node-pg-migrate.sql
           dump schema_liquibase > liquibase.sql
