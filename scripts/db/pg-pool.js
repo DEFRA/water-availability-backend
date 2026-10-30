@@ -1,7 +1,17 @@
+import { realpathSync } from 'node:fs'
+import { pathToFileURL } from 'node:url'
 import pg from 'pg'
 import { Signer } from '@aws-sdk/rds-signer'
 
 const { Pool } = pg
+
+// Comparing import.meta.url to `file://${argv[1]}` silently fails for paths containing spaces
+// or symlinks (the URL is percent-encoded/resolved), making the CLI scripts no-op.
+export function isMainModule(metaUrl) {
+  const entry = process.argv[1]
+
+  return Boolean(entry) && metaUrl === pathToFileURL(realpathSync(entry)).href
+}
 
 // These are local developer tools (seed/reset/integration tests) intended to run against the
 // docker-compose Postgres from compose.yml/.env.example by default, with no setup required beyond

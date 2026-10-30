@@ -174,10 +174,13 @@ CONFIRM_DB_SEED=true npm run db:seed   # overwrites fixture records
 CONFIRM_DB_RESET=true npm run db:reset # truncates the seeded tables and reseeds from scratch
 ```
 
-Both scripts connect to the local docker-compose Postgres by default (no `.env`
-required); the same `POSTGRES_*` variables used elsewhere are honoured if set.
-Because the seed fixture uses real DDSP identifiers, `db:seed` requires
-`CONFIRM_DB_SEED=true` to avoid overwriting records in a shared database.
+Both scripts connect to the local docker-compose Postgres (host port `5433`) by
+default (no `.env` required); the same `POSTGRES_*` variables used elsewhere are
+honoured if set. Note that `npm run migrate:up` defaults to port `5432` when no
+`.env` is present, so copy `.env.example` (which sets `5433`) before migrating.
+The fixture ids are prefixed `TEST-SEED-` so they can't collide with ingested
+DDSP records, but `db:seed` still requires `CONFIRM_DB_SEED=true` because seeded
+fixture rows would otherwise pollute a shared database.
 `db:reset` truncates every seeded table, so it always requires
 `CONFIRM_DB_RESET=true` - a hostname alone can't prove the target is disposable
 (an SSH/SSM tunnel to a shared Aurora instance can also present as `localhost`).

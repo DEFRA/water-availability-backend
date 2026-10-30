@@ -1,4 +1,8 @@
-import { createPoolFromEnv, resolveConnectionOptions } from './pg-pool.js'
+import {
+  createPoolFromEnv,
+  isMainModule,
+  resolveConnectionOptions
+} from './pg-pool.js'
 import { seedDatabase, loadFixture } from './seed.js'
 
 // Order matters for readability only - CASCADE handles FK dependents regardless of order.
@@ -40,7 +44,8 @@ export async function resetDatabase(pool) {
     await seedDatabase(client, fixture)
     await client.query('COMMIT')
   } catch (err) {
-    await client.query('ROLLBACK')
+    // A failed ROLLBACK (e.g. dropped connection) must not mask the original error
+    await client.query('ROLLBACK').catch(() => {})
     throw err
   } finally {
     client.release()
@@ -60,6 +65,6 @@ async function main() {
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isMainModule(import.meta.url)) {
   await main()
 }
