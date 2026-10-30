@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+  <!-- Mirrors migrations/202609171002-add-domain-check-constraints.js -->
+  <changeSet author="water-availability" id="1.2-add-domain-check-constraints">
+    <!-- MARK_RAN adopts a database already migrated by node-pg-migrate instead of failing on existing objects. -->
+    <preConditions onFail="MARK_RAN">
+      <sqlCheck expectedResult="0">SELECT count(*) FROM pg_constraint WHERE conname = 'chk_ingestion_batch_status'</sqlCheck>
+    </preConditions>
+    <sql>
+      ALTER TABLE ingestion_batch
+        ADD CONSTRAINT chk_ingestion_batch_status
+        CHECK (status IN ('running', 'succeeded', 'failed'));
+      ALTER TABLE management_catchments
+        ADD CONSTRAINT chk_management_catchments_water_type
+        CHECK (water_type IN ('surface', 'groundwater'));
+      ALTER TABLE waterbody_features
+        ADD CONSTRAINT chk_waterbody_features_water_type
+        CHECK (water_type IN ('surface', 'groundwater'));
+      ALTER TABLE assessment_point_waterbodies
+        ADD CONSTRAINT chk_apw_validation_status
+        CHECK (validation_status IN ('pending', 'valid', 'invalid'));
+    </sql>
+    <rollback>
+      ALTER TABLE assessment_point_waterbodies DROP CONSTRAINT IF EXISTS chk_apw_validation_status;
+      ALTER TABLE waterbody_features DROP CONSTRAINT IF EXISTS chk_waterbody_features_water_type;
+      ALTER TABLE management_catchments DROP CONSTRAINT IF EXISTS chk_management_catchments_water_type;
+      ALTER TABLE ingestion_batch DROP CONSTRAINT IF EXISTS chk_ingestion_batch_status;
+    </rollback>
+  </changeSet>
+</databaseChangeLog>

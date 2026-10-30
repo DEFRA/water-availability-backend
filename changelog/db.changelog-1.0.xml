@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+  <!-- Mirrors migrations/202609080001-create-assessment-point-tables.js. The postgis extension is pre-installed by CDP. -->
+  <changeSet author="water-availability" id="1.0-create-core-tables">
+    <!-- MARK_RAN adopts a database already migrated by node-pg-migrate instead of failing on existing objects. -->
+    <preConditions onFail="MARK_RAN">
+      <not><tableExists tableName="ingestion_batch"/></not>
+    </preConditions>
+    <sql>
+      CREATE TABLE ingestion_batch (
+        id serial PRIMARY KEY,
+        source_name varchar(100) NOT NULL,
+        source_version varchar(100),
+        started_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        finished_at timestamptz,
+        row_count integer,
+        status varchar(20) NOT NULL DEFAULT 'running'
+      );
+
+      CREATE TABLE management_catchments (
+        id serial PRIMARY KEY,
+        management_catchment_id varchar(100) NOT NULL UNIQUE,
+        name varchar(255),
+        water_type varchar(20) NOT NULL DEFAULT 'surface',
+        river_basin_district varchar(255),
+        geom geometry(Geometry, 4326) NOT NULL,
+        properties jsonb,
+        ingestion_batch_id integer REFERENCES ingestion_batch(id),
+        source_updated_at timestamptz,
+        created_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE INDEX management_catchments_geom_index ON management_catchments USING gist (geom);
+
+      CREATE TABLE operational_catchments (
+        id serial PRIMARY KEY,
+        operational_catchment_id varchar(100) NOT NULL UNIQUE,
+        name varchar(255),
+        management_catchment_id integer REFERENCES management_catchments(id),
+        geom geometry(Geometry, 4326) NOT NULL,
+        properties jsonb,
+        ingestion_batch_id integer REFERENCES ingestion_batch(id),
+        source_updated_at timestamptz,
+        created_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE INDEX operational_catchments_geom_index ON operational_catchments USING gist (geom);
+      CREATE INDEX operational_catchments_management_catchment_id_index ON operational_catchments (management_catchment_id);
+
+      CREATE TABLE waterbody_features (
+        id serial PRIMARY KEY,
+        waterbody_id varchar(100) NOT NULL UNIQUE,
+        name varchar(255),
+        water_body_type varchar(50),
+        water_type varchar(20) NOT NULL DEFAULT 'surface',
+        operational_catchment_id integer REFERENCES operational_catchments(id),
+        geom geometry(Geometry, 4326) NOT NULL,
+        properties jsonb,
+        ingestion_batch_id integer REFERENCES ingestion_batch(id),
+        source_updated_at timestamptz,
+        created_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE INDEX waterbody_features_geom_index ON waterbody_features USING gist (geom);
+      CREATE INDEX waterbody_features_operational_catchment_id_index ON waterbody_features (operational_catchment_id);
+
+      CREATE TABLE water_availability_polygons (
+        id serial PRIMARY KEY,
+        ea_wb_id varchar(255) NOT NULL UNIQUE,
+        camscdsq30 varchar(255),
+        camscdsq50 varchar(255),
+        camscdsq70 varchar(255),
+        camscdsq95 varchar(255),
+        resavail varchar(255),
+        shape_area double precision,
+        shape_leng double precision,
+        geom geometry(Geometry, 4326) NOT NULL,
+        source_srid integer NOT NULL DEFAULT 27700,
+        properties jsonb,
+        ingestion_batch_id integer REFERENCES ingestion_batch(id),
+        source_updated_at timestamptz,
+        created_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE INDEX water_availability_polygons_geom_index ON water_availability_polygons USING gist (geom);
+      CREATE INDEX water_availability_polygons_ea_wb_id_index ON water_availability_polygons (ea_wb_id);
+
+      CREATE TABLE assessment_points (
+        id serial PRIMARY KEY,
+        assessment_point_id varchar(100) NOT NULL UNIQUE,
+        name varchar(255),
+        codes jsonb,
+        source_srid integer NOT NULL DEFAULT 4326,
+        geom geometry(Point, 4326) NOT NULL,
+        operational_catchment_id integer REFERENCES operational_catchments(id),
+        properties jsonb,
+        ingestion_batch_id integer REFERENCES ingestion_batch(id),
+        source_updated_at timestamptz,
+        created_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE INDEX assessment_points_geom_index ON assessment_points USING gist (geom);
+      CREATE INDEX assessment_points_operational_catchment_id_index ON assessment_points (operational_catchment_id);
+
+      CREATE TABLE assessment_point_waterbodies (
+        id serial PRIMARY KEY,
+        assessment_point_id integer NOT NULL REFERENCES assessment_points(id) ON DELETE CASCADE,
+        waterbody_id varchar(100) NOT NULL REFERENCES waterbody_features(waterbody_id),
+        mapping_source varchar(50) NOT NULL DEFAULT 'spatial',
+        validation_status varchar(30) NOT NULL DEFAULT 'pending',
+        properties jsonb,
+        ingestion_batch_id integer REFERENCES ingestion_batch(id),
+        source_updated_at timestamptz,
+        created_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE INDEX assessment_point_waterbodies_assessment_point_id_index ON assessment_point_waterbodies (assessment_point_id);
+      CREATE INDEX assessment_point_waterbodies_waterbody_id_index ON assessment_point_waterbodies (waterbody_id);
+      ALTER TABLE assessment_point_waterbodies
+        ADD CONSTRAINT assessment_point_waterbodies_unique_pair UNIQUE (assessment_point_id, waterbody_id);
+
+      CREATE TABLE hof_bands (
+        id serial PRIMARY KEY,
+        waterbody_id varchar(100) NOT NULL REFERENCES waterbody_features(waterbody_id),
+        band varchar(50) NOT NULL,
+        threshold_ml_per_day numeric(12,3),
+        effective_from date,
+        effective_to date,
+        ingestion_batch_id integer REFERENCES ingestion_batch(id),
+        is_stub_data boolean NOT NULL DEFAULT true,
+        source_updated_at timestamptz,
+        created_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE INDEX hof_bands_waterbody_id_index ON hof_bands (waterbody_id);
+    </sql>
+    <rollback>
+      DROP TABLE IF EXISTS hof_bands, assessment_point_waterbodies, assessment_points,
+        water_availability_polygons, waterbody_features, operational_catchments,
+        management_catchments, ingestion_batch CASCADE;
+    </rollback>
+  </changeSet>
+</databaseChangeLog>

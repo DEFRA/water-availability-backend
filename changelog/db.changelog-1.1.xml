@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+  <!-- Mirrors migrations/202609171001-create-hydrology-tables.js -->
+  <changeSet author="water-availability" id="1.1-create-hydrology-tables">
+    <!-- MARK_RAN adopts a database already migrated by node-pg-migrate instead of failing on existing objects. -->
+    <preConditions onFail="MARK_RAN">
+      <not><tableExists tableName="hydrology_stations"/></not>
+    </preConditions>
+    <sql>
+      CREATE TABLE hydrology_stations (
+        id serial PRIMARY KEY,
+        station_id varchar(100) NOT NULL UNIQUE,
+        wiski_id varchar(100),
+        nrfa_station_id varchar(100),
+        name varchar(255),
+        easting integer,
+        northing integer,
+        geom geometry(Point, 4326) NOT NULL,
+        properties jsonb,
+        ingestion_batch_id integer REFERENCES ingestion_batch(id),
+        source_updated_at timestamptz,
+        created_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE INDEX hydrology_stations_geom_index ON hydrology_stations USING gist (geom);
+
+      CREATE TABLE hydrology_measures (
+        id serial PRIMARY KEY,
+        measure_id varchar(255) NOT NULL UNIQUE,
+        station_id integer NOT NULL REFERENCES hydrology_stations(id) ON DELETE CASCADE,
+        parameter_name varchar(100) NOT NULL,
+        period_name varchar(100),
+        value_type varchar(100),
+        unit_name varchar(50),
+        observation_type varchar(50),
+        properties jsonb,
+        ingestion_batch_id integer REFERENCES ingestion_batch(id),
+        source_updated_at timestamptz,
+        created_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE INDEX hydrology_measures_station_id_index ON hydrology_measures (station_id);
+
+      CREATE TABLE hydrology_readings (
+        id bigserial PRIMARY KEY,
+        measure_id integer NOT NULL REFERENCES hydrology_measures(id) ON DELETE CASCADE,
+        reading_datetime timestamptz NOT NULL,
+        value numeric(14,4),
+        quality varchar(50),
+        completeness varchar(50),
+        qflag varchar(100),
+        ingestion_batch_id integer REFERENCES ingestion_batch(id),
+        created_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+      ALTER TABLE hydrology_readings
+        ADD CONSTRAINT hydrology_readings_unique_measure_time UNIQUE (measure_id, reading_datetime);
+      ALTER TABLE hydrology_readings
+        ADD CONSTRAINT chk_hydrology_readings_quality
+        CHECK (quality IS NULL OR quality IN ('Good', 'Estimated', 'Suspect', 'Unchecked', 'Missing'));
+      ALTER TABLE hydrology_readings
+        ADD CONSTRAINT chk_hydrology_readings_completeness
+        CHECK (completeness IS NULL OR completeness IN ('Complete', 'Incomplete'));
+      CREATE INDEX hydrology_readings_measure_id_reading_datetime_index ON hydrology_readings (measure_id, reading_datetime);
+    </sql>
+    <rollback>
+      DROP TABLE IF EXISTS hydrology_readings, hydrology_measures, hydrology_stations CASCADE;
+    </rollback>
+  </changeSet>
+</databaseChangeLog>

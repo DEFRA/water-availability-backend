@@ -1,0 +1,94 @@
+name: Check Liquibase Schema
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
+
+env:
+  LIQUIBASE_VERSION: 4.27.0
+  PGHOST: localhost
+  PGPORT: 5432
+  PGUSER: postgres
+  PGPASSWORD: postgres
+
+jobs:
+  check-schema:
+    name: Validate changelog and check it matches node-pg-migrate
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Liquibase
+        run: |
+          mkdir -p ./liquibase
+          curl -sL "https://github.com/liquibase/liquibase/releases/download/v${LIQUIBASE_VERSION}/liquibase-${LIQUIBASE_VERSION}.tar.gz" | tar xz -C ./liquibase
+
+      - name: Create databases
+        run: |
+          psql -d postgres -c "CREATE DATABASE schema_liquibase"
+          psql -d postgres -c "CREATE DATABASE schema_node_pg_migrate"
+          psql -d schema_liquibase -c "CREATE EXTENSION IF NOT EXISTS postgis"
+
+      - name: Validate and apply Liquibase changelog
+        run: |
+          for command in validate update; do
+            ./liquibase/liquibase \
+              --searchPath=./changelog \
+              --changeLogFile=db.changelog.xml \
+              --url=jdbc:postgresql://localhost:5432/schema_liquibase \
+              --username="${PGUSER}" \
+              --password="${PGPASSWORD}" \
+              "${command}"
+          done
+
+      - name: Apply node-pg-migrate migrations
+        run: npm run migrate:up
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_DATABASE: schema_node_pg_migrate
+          POSTGRES_USERNAME: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_IAM_AUTHENTICATION: false
+          POSTGRES_SSL_ENABLED: false
+
+      - name: Compare schemas
+        run: |
+          dump() {
+            pg_dump --schema-only --no-owner --no-privileges \
+              --exclude-table='pgmigrations*' \
+              --exclude-table='databasechangelog*' \
+              "$1" | grep -v -e '^--' -e '^$' -e '^SET ' -e '^SELECT pg_catalog.set_config'
+          }
+          dump schema_node_pg_migrate > node-pg-migrate.sql
+          dump schema_liquibase > liquibase.sql
+          diff -u node-pg-migrate.sql liquibase.sql
