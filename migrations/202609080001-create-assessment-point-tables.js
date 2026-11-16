@@ -205,9 +205,6 @@ export const up = (pgm) => {
     method: 'gist',
     ifNotExists: true
   })
-  pgm.createIndex('water_availability_polygons', 'ea_wb_id', {
-    ifNotExists: true
-  })
 
   pgm.createTable(
     'assessment_points',

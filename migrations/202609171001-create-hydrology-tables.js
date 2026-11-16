@@ -121,10 +121,6 @@ export const up = (pgm) => {
     'chk_hydrology_readings_completeness',
     "CHECK (completeness IS NULL OR completeness IN ('Complete', 'Incomplete'))"
   )
-
-  pgm.createIndex('hydrology_readings', ['measure_id', 'reading_datetime'], {
-    ifNotExists: true
-  })
 }
 
 export const down = (pgm) => {

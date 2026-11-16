@@ -9,7 +9,7 @@
   <changeSet author="water-availability" id="1.2-add-domain-check-constraints">
     <!-- MARK_RAN adopts a database already migrated by node-pg-migrate instead of failing on existing objects. -->
     <preConditions onFail="MARK_RAN">
-      <sqlCheck expectedResult="0">SELECT count(*) FROM pg_constraint WHERE conname = 'chk_ingestion_batch_status'</sqlCheck>
+      <sqlCheck expectedResult="0">SELECT count(*) FROM pg_constraint WHERE conname = 'chk_ingestion_batch_status' AND conrelid = to_regclass('ingestion_batch')</sqlCheck>
     </preConditions>
     <sql>
       ALTER TABLE ingestion_batch
@@ -25,11 +25,19 @@
         ADD CONSTRAINT chk_apw_validation_status
         CHECK (validation_status IN ('pending', 'valid', 'invalid'));
     </sql>
+    <!-- Liquibase also runs this for MARK_RAN changesets, so refuse to drop constraints it only adopted. -->
     <rollback>
-      ALTER TABLE assessment_point_waterbodies DROP CONSTRAINT IF EXISTS chk_apw_validation_status;
-      ALTER TABLE waterbody_features DROP CONSTRAINT IF EXISTS chk_waterbody_features_water_type;
-      ALTER TABLE management_catchments DROP CONSTRAINT IF EXISTS chk_management_catchments_water_type;
-      ALTER TABLE ingestion_batch DROP CONSTRAINT IF EXISTS chk_ingestion_batch_status;
+      <sql splitStatements="false">
+        DO $$ BEGIN
+          IF EXISTS (SELECT 1 FROM databasechangelog WHERE id = '1.2-add-domain-check-constraints' AND exectype = 'MARK_RAN') THEN
+            RAISE EXCEPTION 'Refusing to roll back 1.2: it was adopted (MARK_RAN), not created, by Liquibase';
+          END IF;
+        END $$;
+        ALTER TABLE assessment_point_waterbodies DROP CONSTRAINT IF EXISTS chk_apw_validation_status;
+        ALTER TABLE waterbody_features DROP CONSTRAINT IF EXISTS chk_waterbody_features_water_type;
+        ALTER TABLE management_catchments DROP CONSTRAINT IF EXISTS chk_management_catchments_water_type;
+        ALTER TABLE ingestion_batch DROP CONSTRAINT IF EXISTS chk_ingestion_batch_status;
+      </sql>
     </rollback>
   </changeSet>
 </databaseChangeLog>
