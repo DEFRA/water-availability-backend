@@ -247,9 +247,8 @@ CREATE TABLE IF NOT EXISTS assessment_point_waterbodies (
   CONSTRAINT chk_apw_validation_status CHECK (validation_status IN ('pending', 'valid', 'invalid'))
 );
 
-CREATE INDEX IF NOT EXISTS idx_assessment_point_waterbodies_ap
-  ON assessment_point_waterbodies (assessment_point_id);
-
+-- No separate index on assessment_point_id: UNIQUE (assessment_point_id, waterbody_id) above already
+-- serves it as its leading column. The waterbody_id index below is not redundant (second column only).
 CREATE INDEX IF NOT EXISTS idx_assessment_point_waterbodies_wb
   ON assessment_point_waterbodies (waterbody_id);
 
