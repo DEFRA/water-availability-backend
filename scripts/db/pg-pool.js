@@ -25,7 +25,7 @@ function boolEnv(name, defaultValue) {
 
 export function resolveConnectionOptions() {
   const host = process.env.POSTGRES_HOST ?? '127.0.0.1'
-  const port = Number(process.env.POSTGRES_PORT ?? 5433)
+  const port = Number(process.env.POSTGRES_PORT ?? 5432)
   const database = process.env.POSTGRES_DATABASE ?? 'water_availability'
   const user = process.env.POSTGRES_USERNAME ?? 'postgres'
   const iamAuthentication = boolEnv('POSTGRES_IAM_AUTHENTICATION', false)
