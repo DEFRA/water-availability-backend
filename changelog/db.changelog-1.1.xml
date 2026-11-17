@@ -65,6 +65,7 @@
       ALTER TABLE hydrology_readings
         ADD CONSTRAINT chk_hydrology_readings_completeness
         CHECK (completeness IS NULL OR completeness IN ('Complete', 'Incomplete'));
+      CREATE INDEX hydrology_readings_measure_id_reading_datetime_index ON hydrology_readings (measure_id, reading_datetime);
     </sql>
     <!-- Liquibase also runs this for MARK_RAN changesets, so refuse to drop tables it only adopted. -->
     <rollback>

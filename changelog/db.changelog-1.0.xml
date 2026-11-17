@@ -88,6 +88,7 @@
         updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP
       );
       CREATE INDEX water_availability_polygons_geom_index ON water_availability_polygons USING gist (geom);
+      CREATE INDEX water_availability_polygons_ea_wb_id_index ON water_availability_polygons (ea_wb_id);
 
       CREATE TABLE assessment_points (
         id serial PRIMARY KEY,
