@@ -230,11 +230,18 @@ development and CI only. Any schema change must be made in both places, with the
 same result. The Check Liquibase Schema workflow applies both to scratch
 databases on every pull request and fails if the resulting schemas differ.
 
-Each changeset has a `MARK_RAN` precondition, so applying the changelog to a
+The publish workflow only runs on pushes to `main`, and the hotfix workflow does
+not publish the changelog. To publish a changelog version for a hotfix, or to
+re-publish, run the `Publish Database Schema` workflow manually from the GitHub
+Actions tab. Published versions are immutable, so give it a new version if one
+was already published.
+
+Changesets 1.0 to 1.2 have a `MARK_RAN` precondition, so applying the changelog to a
 database that was already migrated with `node-pg-migrate` records the changesets
 as run instead of failing on existing objects. Liquibase still runs a changeset's
 rollback in that case, so each rollback refuses to run for a changeset that was
 only adopted (`MARK_RAN`) and never drops objects Liquibase did not create.
+Changeset 1.3 only uses `IF EXISTS` / `IF NOT EXISTS`, so it needs neither.
 
 The connection pool lifetime is limited to ten minutes so connections are
 recreated before the fifteen-minute IAM token lifetime expires.

@@ -139,8 +139,7 @@ CREATE TABLE IF NOT EXISTS water_availability_polygons (
 CREATE INDEX IF NOT EXISTS idx_water_availability_polygons_geom
   ON water_availability_polygons USING GIST (geom);
 
-CREATE INDEX IF NOT EXISTS idx_water_availability_polygons_wb_id
-  ON water_availability_polygons (ea_wb_id);
+-- No separate index on ea_wb_id: the UNIQUE constraint above already provides one.
 
 -- Hydrology API monitoring stations. Station coordinates are returned as WGS84 lat/long;
 -- easting/northing are retained because they are also supplied by the API.
@@ -201,8 +200,7 @@ CREATE TABLE IF NOT EXISTS hydrology_readings (
   CONSTRAINT chk_hydrology_readings_completeness CHECK (completeness IS NULL OR completeness IN ('Complete', 'Incomplete'))
 );
 
-CREATE INDEX IF NOT EXISTS idx_hydrology_readings_measure_time
-  ON hydrology_readings (measure_id, reading_datetime);
+-- No separate index on (measure_id, reading_datetime): the UNIQUE constraint above already provides one.
 
 -- CAMS assessment points: EA DSP OGC Features collection
 -- `ea_catchment_abstraction_management_strategy_assessment_points`. Source geometry is WGS84

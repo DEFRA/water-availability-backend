@@ -1,0 +1,40 @@
+name: Publish Database Schema
+
+# On-demand publish of ./changelog to the CDP Portal. The normal Publish workflow only
+# publishes on pushes to main, and the Publish Hot Fix workflow does not publish the
+# changelog, so use this to publish a changelog version for a hotfix or to re-publish.
+# Published versions are immutable, so provide a new version if one was already published.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Changelog version (leave empty to use the latest version tag)'
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: eu-west-2
+  AWS_ACCOUNT_ID: '094954420758'
+
+jobs:
+  publish-db-schema:
+    name: Publish database changelog
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v7
+
+      - name: Publish Database Schema
+        uses: DEFRA/cdp-build-action/publish-db-migrations@main
+        with:
+          path: ./changelog
+          force: 'true'
+          version: ${{ inputs.version }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}

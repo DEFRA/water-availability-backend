@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+  <!-- Mirrors migrations/202611171001-drop-redundant-indexes.js. Both indexes duplicate the index created by a UNIQUE constraint on the same columns. -->
+  <changeSet author="water-availability" id="1.3-drop-redundant-indexes">
+    <!-- IF EXISTS makes this safe on databases that never had the indexes and on ones already migrated by node-pg-migrate, so no MARK_RAN precondition is needed. -->
+    <sql>
+      DROP INDEX IF EXISTS water_availability_polygons_ea_wb_id_index;
+      DROP INDEX IF EXISTS hydrology_readings_measure_id_reading_datetime_index;
+    </sql>
+    <rollback>
+      CREATE INDEX IF NOT EXISTS water_availability_polygons_ea_wb_id_index ON water_availability_polygons (ea_wb_id);
+      CREATE INDEX IF NOT EXISTS hydrology_readings_measure_id_reading_datetime_index ON hydrology_readings (measure_id, reading_datetime);
+    </rollback>
+  </changeSet>
+</databaseChangeLog>
