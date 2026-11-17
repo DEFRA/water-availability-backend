@@ -42,6 +42,12 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Publish Database Schema
+        uses: DEFRA/cdp-build-action/publish-db-migrations@main
+        with:
+          path: ./changelog
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@v8.3.0
         env:
