@@ -66,14 +66,14 @@
     "undici": "8.12.3"
   },
   "devDependencies": {
-    "@vitest/coverage-v8": "5.1.0",
+    "@vitest/coverage-v8": "5.1.1",
     "eslint": "9.39.2",
     "husky": "9.1.7",
     "neostandard": "0.14.1",
     "node-pg-migrate": "9.0.0",
     "nodemon": "3.1.14",
     "prettier": "3.9.10",
-    "vitest": "5.1.0",
+    "vitest": "5.1.1",
     "vitest-fetch-mock": "0.4.5"
   }
 }
